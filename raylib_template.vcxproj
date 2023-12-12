@@ -168,6 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Alien.h" />
+    <ClInclude Include="Source\Background.h" />
     <ClInclude Include="Source\game.h" />
     <ClInclude Include="Source\Player.h" />
     <ClInclude Include="Source\Projectile.h" />
