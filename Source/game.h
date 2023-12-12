@@ -5,6 +5,7 @@
 #include <string>
 #include "Player.h"
 #include "Projectile.h"
+#include "Wall.h"
 enum struct State{
     STARTSCREEN,
     GAMEPLAY,
@@ -14,19 +15,6 @@ enum struct State{
 struct PlayerData{
     std::string name;
     int score;
-};
-
-
-
-struct Wall{
-    Vector2 position;
-    Rectangle rec;
-    bool active;
-    Color color;
-    int health = 50;
-    int radius = 60;
-    void Render(Texture2D texture);
-    void Update();
 };
 
 struct Alien{
