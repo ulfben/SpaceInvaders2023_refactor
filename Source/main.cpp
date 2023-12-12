@@ -23,80 +23,89 @@
 
 #include "raylib.h"
 #include "game.h"
-
+#include <print>
 
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
 int main(void)
-{    
+{
+
     // Initialization
-    //--------------------------------------------------------------------------------------
+   //--------------------------------------------------------------------------------------
     const int screenWidth = 1920;
     const int screenHeight = 1080;
-
-    InitWindow(screenWidth, screenHeight, "SPACE INVADERS");
-
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
-
-    Game game = { State::STARTSCREEN };
-    Resources resources;
-    game.resources = resources;
-    game.Launch();
-
-    
-    //--------------------------------------------------------------------------------------
-
-    InitAudioDevice();
-
-    auto sound = LoadSound("./hitHurt.ogg");
-    
+    try {
+        InitWindow(screenWidth, screenHeight, "SPACE INVADERS");
+        SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
 
 
+        Resources resources;
+        Game game = { State::STARTSCREEN };
 
-    // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
-    {
-        // Update
-        //----------------------------------------------------------------------------------
-        // TODO: Update your variables here
-        //----------------------------------------------------------------------------------
+        game.resources = resources;
+        game.Launch();
 
-        //if (IsKeyPressed(KEY_SPACE))
-        //{
-        //    PlaySound(sound);
-        //}
 
-        //if (IsKeyPressed(KEY_BACKSPACE))
-        //{
-        //    StopSound(sound);
-        //}
+        //--------------------------------------------------------------------------------------
 
-        game.Update();
-      
+        InitAudioDevice();
 
-        // Draw
-        //----------------------------------------------------------------------------------
-        BeginDrawing();
+        auto sound = LoadSound("./hitHurt.ogg");
 
-        ClearBackground(BLACK);
 
-       
 
-        game.Render();
 
-        EndDrawing();
-        //----------------------------------------------------------------------------------
+        // Main game loop
+        while (!WindowShouldClose())    // Detect window close button or ESC key
+        {
+            // Update
+            //----------------------------------------------------------------------------------
+            // TODO: Update your variables here
+            //----------------------------------------------------------------------------------
+
+            //if (IsKeyPressed(KEY_SPACE))
+            //{
+            //    PlaySound(sound);
+            //}
+
+            //if (IsKeyPressed(KEY_BACKSPACE))
+            //{
+            //    StopSound(sound);
+            //}
+
+            game.Update();
+
+
+            // Draw
+            //----------------------------------------------------------------------------------
+            BeginDrawing();
+
+            ClearBackground(BLACK);
+
+
+
+            game.Render();
+
+            EndDrawing();
+            //----------------------------------------------------------------------------------
+        }
+
+        CloseAudioDevice();
+
+        // De-Initialization
+        //--------------------------------------------------------------------------------------
+        CloseWindow();        // Close window and OpenGL context
+        //--------------------------------------------------------------------------------------
+
+        std::string filename = "level.txt";
     }
-
-    CloseAudioDevice();
-    
-    // De-Initialization
-    //--------------------------------------------------------------------------------------
-    CloseWindow();        // Close window and OpenGL context
-    //--------------------------------------------------------------------------------------
-
-    std::string filename = "level.txt";  
+    catch (const std::runtime_error& e) {
+        std::println(e.what());
+    }
+    catch (...) {
+        std::println("Unkown error!");
+    }
 
     return 0;
 }

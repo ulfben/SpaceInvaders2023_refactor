@@ -85,8 +85,7 @@ void Game::Continue()
 
 void Game::Launch()
 {
-	//LOAD SOME RESOURCES HERE
-	resources.Load();
+	
 }
 
 void Game::Update()
@@ -370,24 +369,24 @@ void Game::Render()
 		DrawText(TextFormat("Lives: %i", player.lives), 50, 70, 40, YELLOW);
 
 		//player rendering 
-		player.Render(resources.shipTextures[player.activeTexture]);
+		player.Render(resources.shipTextures[player.activeTexture].get());
 
 		//projectile rendering
 		for (int i = 0; i < Projectiles.size(); i++)
 		{
-			Projectiles[i].Render(resources.laserTexture);
+			Projectiles[i].Render(resources.laserTexture.get());
 		}
 
 		// wall rendering 
 		for (int i = 0; i < Walls.size(); i++)
 		{
-			Walls[i].Render(resources.barrierTexture); 
+			Walls[i].Render(resources.barrierTexture.get()); 
 		}
 
 		//alien rendering  
 		for (int i = 0; i < Aliens.size(); i++)
 		{
-			Aliens[i].Render(resources.alienTexture);
+			Aliens[i].Render(resources.alienTexture.get());
 		}
 
 
