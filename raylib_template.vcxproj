@@ -165,7 +165,6 @@
   <ItemGroup>
     <ClCompile Include="Source\game.cpp" />
     <ClCompile Include="Source\main.cpp" />
-    <ClCompile Include="Source\Resources.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\game.h" />
