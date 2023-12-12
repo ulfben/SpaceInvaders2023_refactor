@@ -83,11 +83,6 @@ void Game::Continue()
 	gameState = State::STARTSCREEN;
 }
 
-void Game::Launch()
-{
-	
-}
-
 void Game::Update()
 {
 	switch (gameState)

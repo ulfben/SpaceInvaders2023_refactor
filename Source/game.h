@@ -127,7 +127,7 @@ struct Background
 struct Game
 {
 	// Gamestate
-	State gameState = {};
+	State gameState = State::STARTSCREEN;
 
 	// Score
 	int score;
@@ -153,8 +153,7 @@ struct Game
 	void Start();
 	void End();
 
-	void Continue();
-	void Launch();
+	void Continue();	
 
 	void Update();
 	void Render();

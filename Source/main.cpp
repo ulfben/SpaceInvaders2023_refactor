@@ -3,25 +3,39 @@
 #include "raylib.h"
 #include "game.h"
 
-constexpr int fps = 60;
-constexpr int screenWidth = 1920;
-constexpr int screenHeight = 1080;
-constexpr std::string_view title = "Space Invaders"; 
+constexpr int FPS = 60;
+constexpr int WINDOW_WIDTH = 1280;
+constexpr int WINDOW_HEIGHT = 720;
+constexpr std::string_view TITLE = "Space Invaders";
 
-int main(void) { 
+struct Window{
+    Window(std::string_view title, unsigned width, unsigned height, unsigned fps = 60) noexcept {
+        InitWindow(width, height, title.data());
+        SetTargetFPS(fps);
+    }
+    ~Window() noexcept {
+        CloseWindow();
+    }
+};
+struct Draw {
+    Draw() noexcept {
+        BeginDrawing();
+        ClearBackground(BLACK);
+    }
+    ~Draw() noexcept {
+        EndDrawing();
+    }
+};
+
+int main(void) {
     try {
-        InitWindow(screenWidth, screenHeight, title.data());
-        SetTargetFPS(fps);                
-        Game game = { State::STARTSCREEN };        
-        game.Launch();
-        while (!WindowShouldClose()){            
-            game.Update();            
-            BeginDrawing();
-            ClearBackground(BLACK);
-            game.Render();
-            EndDrawing();            
+        Window w{TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, FPS};        
+        Game game{};
+        while (!WindowShouldClose()) {
+            game.Update();
+            Draw d{}; //TODO: make game responsible for this.
+            game.Render();        
         }        
-        CloseWindow();        
     }
     catch (const std::runtime_error& e) {
         std::println("{}", e.what());
