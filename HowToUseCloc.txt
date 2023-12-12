@@ -1,0 +1,7 @@
+In short, open the terminal.(If you are on Windows 11 you should have a program called Terminal preinstalled, otherwise you can open cmd.exe)
+
+Once you have it open, navigate to you project folder. You can do that with the command 'cd' (change directory) followed by the path of the folder e.g. "cd C:\Programming\ShootRock\"
+
+Once you are in the right folder you can do "cloc ./Source" to cound the number of lines in every source file in the ./Source folder. There is a lot more you can see with the cloc program, for example "cloc --by-file ./Source" will count the lines in each file seperately. You can find more options here https://github.com/AlDanial/cloc#options-
+
+In general you can find more info here: https://github.com/AlDanial/cloc#quick-start-
