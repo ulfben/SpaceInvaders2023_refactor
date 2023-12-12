@@ -6,6 +6,7 @@
 #include "Player.h"
 #include "Projectile.h"
 #include "Wall.h"
+#include "Alien.h"
 enum struct State{
     STARTSCREEN,
     GAMEPLAY,
@@ -16,21 +17,6 @@ struct PlayerData{
     std::string name;
     int score;
 };
-
-struct Alien{
-    EntityType type = EntityType::ENEMY;
-    Color color = WHITE;
-    Vector2 position = {0, 0};
-    int x = 0;
-    int y = 0;
-    float radius = 30;
-    bool active = true;
-    bool moveRight = true;
-    int speed = 2;
-    void Update();
-    void Render(Texture2D texture);
-};
-
 
 struct Star{
     Vector2 initPosition = {0, 0};
