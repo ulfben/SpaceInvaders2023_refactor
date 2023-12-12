@@ -3,6 +3,7 @@
 #include <vector>
 #include "Resources.h"
 #include <string>
+#include "Player.h"
 
 enum struct State{
     STARTSCREEN,
@@ -10,33 +11,12 @@ enum struct State{
     ENDSCREEN
 };
 
-enum struct EntityType{
-    PLAYER,
-    ENEMY,
-    PLAYER_PROJECTILE,
-    ENEMY_PROJECTILE
-};
+
 
 struct PlayerData{
     std::string name;
     int score;
 };
-
-struct Player{
-    float x_pos = 0;
-    float speed = 7;
-    float player_base_height = 70.0f;
-    float radius = 50;
-    int lives = 3;
-    int direction = 0;
-    int activeTexture = 0;
-    float timer = 0;
-    EntityType type = EntityType::PLAYER;
-    void Initialize();
-    void Render(Texture2D texture);
-    void Update();
-};
-
 
 struct Projectile{
     Vector2 position = {0,0};

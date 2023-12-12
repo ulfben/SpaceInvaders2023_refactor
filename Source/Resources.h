@@ -5,6 +5,14 @@
 #include <stdexcept>
 #include <format>
 using namespace std::literals::string_view_literals;
+
+enum struct EntityType{ //TODO: temporary re-location. Will delete.
+    PLAYER,
+    ENEMY,
+    PLAYER_PROJECTILE,
+    ENEMY_PROJECTILE
+};
+
 class OwnTexture {    
     Texture2D _tex;
 public:
