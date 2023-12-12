@@ -17,23 +17,14 @@ struct Window{
         CloseWindow();
     }
 };
-struct Draw {
-    Draw() noexcept {
-        BeginDrawing();
-        ClearBackground(BLACK);
-    }
-    ~Draw() noexcept {
-        EndDrawing();
-    }
-};
+
 
 int main(void) {
     try {
         Window w{TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, FPS};        
         Game game{};
         while (!WindowShouldClose()) {
-            game.Update();
-            Draw d{}; //TODO: make game responsible for this.
+            game.Update();          
             game.Render();        
         }        
     }

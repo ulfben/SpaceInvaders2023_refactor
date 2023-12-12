@@ -6,6 +6,16 @@
 #include <fstream>
 
 
+struct Draw {
+    Draw() noexcept {
+        BeginDrawing();
+        ClearBackground(BLACK);
+    }
+    ~Draw() noexcept {
+        EndDrawing();
+    }
+};
+
 // MATH FUNCTIONS
 float lineLength(Vector2 A, Vector2 B) //Uses pythagoras to calculate the length of a line
 {
@@ -342,6 +352,7 @@ void Game::Update()
 
 void Game::Render()
 {
+	 Draw d{};
 	switch (gameState)
 	{
 	case State::STARTSCREEN:
