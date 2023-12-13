@@ -1,6 +1,7 @@
 #include "game.h"
-#include <vector>
 #include <cassert>
+#include <cmath>
+#include <vector>
 
 struct Draw{
     Draw() noexcept{
@@ -13,7 +14,7 @@ struct Draw{
 };
 
 float distance(Vector2 A, Vector2 B) noexcept{
-    return sqrtf(pow(B.x - A.x, 2) + pow(B.y - A.y, 2));
+    return std::sqrtf(std::pow(B.x - A.x, 2.0f) + pow(B.y - A.y, 2.0f));
 }
 
 bool pointInCircle(Vector2 circlePos, float radius, Vector2 point) noexcept{
@@ -30,9 +31,6 @@ void Game::Start(){
         newWalls.position.x = wall_distance * (i + 1);
         Walls.push_back(newWalls);
     }
-    Player newPlayer;
-    player = newPlayer;
-    player.Initialize();
     SpawnAliens();
     Background newBackground;
     newBackground.Initialize(600);
@@ -69,7 +67,7 @@ void Game::Update(){
         player.Update();        
         for(int i = 0; i < Aliens.size(); i++){
             Aliens[i].Update();
-            if(Aliens[i].position.y > GetScreenHeight() - player.player_base_height){
+            if(Aliens[i].position.y > player.pos.y){
                 End();
             }
         }        
@@ -79,10 +77,8 @@ void Game::Update(){
         if(Aliens.size() < 1){
             SpawnAliens();
         }
-
-        playerPos = {player.x_pos, (float) player.player_base_height};
-        cornerPos = {0, (float) player.player_base_height};
-        offset = distance(playerPos, cornerPos) * -1;
+                
+        offset = distance(player.pos, {0.0f, player.pos.y}) * -1;
         background.Update(offset / 15);
 
         for(int i = 0; i < Projectiles.size(); i++){
@@ -104,7 +100,7 @@ void Game::Update(){
 
             for(int i = 0; i < Projectiles.size(); i++){
                 if(Projectiles[i].type == EntityType::ENEMY_PROJECTILE){
-                    if(CheckCollision({player.x_pos, GetScreenHeight() - player.player_base_height}, player.radius, Projectiles[i].lineStart, Projectiles[i].lineEnd)){                        
+                    if(CheckCollision(player.pos, player.radius, Projectiles[i].lineStart, Projectiles[i].lineEnd)){                        
                         Projectiles[i].active = false;
                         player.lives -= 1;
                     }
@@ -119,11 +115,10 @@ void Game::Update(){
             }
         }
         
-        if(IsKeyPressed(KEY_SPACE)){
-            float window_height = (float) GetScreenHeight();
+        if(IsKeyPressed(KEY_SPACE)){         
             Projectile newProjectile;
-            newProjectile.position.x = player.x_pos;
-            newProjectile.position.y = window_height - 130;
+            newProjectile.position = player.pos;
+            newProjectile.position.y -= 30.0f;
             newProjectile.type = EntityType::PLAYER_PROJECTILE;
             Projectiles.push_back(newProjectile);
         }

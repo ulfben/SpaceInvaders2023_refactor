@@ -22,7 +22,7 @@ struct PlayerData{
 struct Game{    
     State gameState = State::STARTSCREEN;
     Resources resources{};
-    Player player;
+    Player player{};
     Background background;
     std::vector<Projectile> Projectiles;
     std::vector<Wall> Walls;

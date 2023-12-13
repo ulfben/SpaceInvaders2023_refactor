@@ -2,20 +2,15 @@
 #include "Resources.h"
 
 struct Player{
-    float x_pos = 0;
+    EntityType type = EntityType::PLAYER;
+    Vector2 pos{GetScreenWidth() / 2.0f, GetScreenHeight()-70.f};
     float speed = 7;
-    float player_base_height = 70.0f;
     float radius = 50;
+    float timer = 0;
     int lives = 3;
     int direction = 0;
     int activeTexture = 0;
-    float timer = 0;
-    EntityType type = EntityType::PLAYER;
-    void Initialize() noexcept {
-        float window_width = (float) GetScreenWidth();
-        x_pos = window_width / 2;
-    }
-
+        
     void Update() noexcept {
         direction = 0;
         if(IsKeyDown(KEY_LEFT)){
@@ -25,12 +20,12 @@ struct Player{
             direction++;
         }
 
-        x_pos += speed * direction;
+        pos.x += speed * direction;
 
-        if(x_pos < 0 + radius){
-            x_pos = 0 + radius;
-        } else if(x_pos > GetScreenWidth() - radius){
-            x_pos = GetScreenWidth() - radius;
+        if(pos.x < radius){
+           pos.x = radius;
+        } else if(pos.x > GetScreenWidth() - radius){
+            pos.x = GetScreenWidth() - radius;
         }
 
         timer += GetFrameTime();
@@ -47,7 +42,7 @@ struct Player{
     void Render(Texture2D texture) const noexcept{
         float window_height = GetScreenHeight();
         DrawTexturePro(texture,
-                {0,0,352,352,}, {x_pos, window_height - player_base_height,100,100,}, 
+                {0,0,352,352,}, {pos.x, pos.y,100,100,}, 
                 {50, 50},0,WHITE
         );
     }
