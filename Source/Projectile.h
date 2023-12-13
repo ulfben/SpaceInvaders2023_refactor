@@ -17,7 +17,7 @@ struct Projectile{
         }
     }
 
-    void Render(Texture2D texture){      
+    void Render(const Texture2D& texture) const noexcept{      
         DrawTexturePro(texture,
             {0,0,176,176,}, {position.x,position.y,50,50,}, 
             {25 , 25}, 0, WHITE

@@ -6,7 +6,7 @@ struct Wall{
     Color color;
     int health = 50;
     int radius = 60;
-    void Render(Texture2D texture) noexcept{
+    void Render(const Texture2D& texture) const noexcept{
         DrawTexturePro(texture,
             {0,0,704,704,}, {position.x,position.y,200,200,}, 
             {100 , 100},0,WHITE

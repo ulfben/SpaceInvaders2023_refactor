@@ -26,7 +26,7 @@ struct Alien{
         }
     }
 
-    void Render(Texture2D texture) const noexcept{      
+    void Render(const Texture2D& texture) const noexcept{      
         DrawTexturePro(texture,
             {0,0,352,352,}, {position.x, position.y, 100, 100}, 
             {50 , 50}, 0, WHITE
