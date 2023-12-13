@@ -24,12 +24,35 @@ static void render(std::span<const T> entities, const OwnTexture& tex) noexcept{
     }
 };
 
-float distance(Vector2 A, Vector2 B) noexcept{
-    return std::sqrtf(std::pow(B.x - A.x, 2.0f) + pow(B.y - A.y, 2.0f));
+float distanceSq(const Vector2& A, const Vector2& B) noexcept {
+    return (B.x - A.x)*(B.x - A.x) + (B.y - A.y)*(B.y - A.y);
 }
 
-bool pointInCircle(Vector2 circlePos, float radius, Vector2 point) noexcept{
-    return distance(circlePos, point) < radius;
+float distance(const Vector2& A, const Vector2& B) noexcept{
+    return std::sqrt(distanceSq(A, B));
+}
+
+bool pointInCircle(const Vector2& circlePos, float radius, const Vector2& point) noexcept {
+    return distanceSq(circlePos, point) < (radius*radius);
+}
+
+Vector2 closestPointOnLine(const Vector2& A, const Vector2& B, const Vector2& P) noexcept {
+    const Vector2 AP = {P.x - A.x, P.y - A.y};
+    const Vector2 AB = {B.x - A.x, B.y - A.y};
+    const float ab2 = AB.x * AB.x + AB.y * AB.y;
+    const float ap_ab = AP.x * AB.x + AP.y * AB.y;
+    float t = ap_ab / ab2;
+    if (t < 0.0f) t = 0.0f;
+    else if (t > 1.0f) t = 1.0f;
+    return {A.x + AB.x * t, A.y + AB.y * t};
+}
+
+bool CheckCollision(const Vector2& circlePos, float circleRadius, const Vector2& lineStart, const Vector2& lineEnd) noexcept {
+    if (pointInCircle(circlePos, circleRadius, lineStart) || pointInCircle(circlePos, circleRadius, lineEnd)) {
+        return true;
+    }
+    Vector2 closest = closestPointOnLine(lineStart, lineEnd, circlePos);
+    return pointInCircle(circlePos, circleRadius, closest);
 }
 
 void Game::Start(){
@@ -289,26 +312,4 @@ void Game::LoadLeaderboard(){
 
 void Game::SaveLeaderboard(){
   //TODO: implement leaderboard saving
-}
-
-
-bool Game::CheckCollision(Vector2 circlePos, float circleRadius, Vector2 lineStart, Vector2 lineEnd){
-    if(pointInCircle(circlePos, circleRadius, lineStart) || pointInCircle(circlePos, circleRadius, lineEnd)){
-        return true;
-    }
-    Vector2 A = lineStart;
-    Vector2 B = lineEnd;
-    Vector2 C = circlePos;
-    float length = distance(A, B);
-    float dotP = (((C.x - A.x) * (B.x - A.x)) + ((C.y - A.y) * (B.y - A.y))) / pow(length, 2);
-    float closestX = A.x + (dotP * (B.x - A.x));
-    float closestY = A.y + (dotP * (B.y - A.y));
-    float buffer = 0.1f;
-    float closeToStart = distance(A, {closestX, closestY});
-    float closeToEnd = distance(B, {closestX, closestY});
-    float closestLength = closeToStart + closeToEnd;
-    if(closestLength == length + buffer || closestLength == length - buffer){
-        return (distance(A, {closestX, closestY}) < circleRadius);
-    }
-    return false;
 }
