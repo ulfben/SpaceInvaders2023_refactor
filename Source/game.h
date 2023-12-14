@@ -19,7 +19,10 @@ struct PlayerData{
     int score;
 };
 
-struct Game{    
+struct Game{  
+    static constexpr unsigned WALL_COUNT = 5;
+    static constexpr unsigned WALL_DIST_FROM_BOTTOM = 250;
+
     State gameState = State::STARTSCREEN;
     Resources resources{};
     Player player{};
@@ -39,7 +42,7 @@ struct Game{
     bool mouseOnText = false;
     int framesCounter = 0;
     int score;
-    int wallCount = 5;
+    
     float shootTimer = 0;
     Rectangle rec = {0, 0 ,0 ,0};
     int formationWidth = 8;
@@ -55,9 +58,12 @@ struct Game{
     void Continue();
     void Update();
     void Render();
-    void SpawnAliens();
+    
     bool CheckNewHighScore();
     void InsertNewHighScore(std::string name);
     void LoadLeaderboard();
     void SaveLeaderboard();
+private: 
+    void SpawnWalls();
+    void SpawnAliens(); 
 };

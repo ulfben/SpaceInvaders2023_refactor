@@ -4,7 +4,29 @@
 #include <string_view>
 #include <stdexcept>
 #include <format>
+#include <cmath>
+#include <type_traits>
+
 using namespace std::literals::string_view_literals;
+
+//TODO: utilities, move to separate header. 
+static float toFloat(int value) noexcept {
+    return static_cast<float>(value);
+}
+
+template <std::integral T>
+static T toInt(double value) noexcept {
+    return static_cast<T>(value);
+}
+
+template <std::integral T>
+static T floor(double value) noexcept {
+    return toInt<T>(std::floor(value));
+}
+
+static void DrawText(std::string_view t, Vector2 pos, int fontsize, const Color& c ) noexcept{
+    DrawText(t.data(), floor<int>(pos.x), floor<int>(pos.y), fontsize, c);
+}
 
 enum struct EntityType{ //TODO: temporary re-location. Will delete.
     PLAYER,

@@ -24,47 +24,50 @@ static void render(std::span<const T> entities, const OwnTexture& tex) noexcept{
     }
 };
 
-float distanceSq(const Vector2& A, const Vector2& B) noexcept {
-    return (B.x - A.x)*(B.x - A.x) + (B.y - A.y)*(B.y - A.y);
+float distanceSq(const Vector2& A, const Vector2& B) noexcept{
+    return (B.x - A.x) * (B.x - A.x) + (B.y - A.y) * (B.y - A.y);
 }
 
 float distance(const Vector2& A, const Vector2& B) noexcept{
     return std::sqrt(distanceSq(A, B));
 }
 
-bool pointInCircle(const Vector2& circlePos, float radius, const Vector2& point) noexcept {
-    return distanceSq(circlePos, point) < (radius*radius);
+bool pointInCircle(const Vector2& circlePos, float radius, const Vector2& point) noexcept{
+    return distanceSq(circlePos, point) < (radius * radius);
 }
 
-Vector2 closestPointOnLine(const Vector2& A, const Vector2& B, const Vector2& P) noexcept {
+Vector2 closestPointOnLine(const Vector2& A, const Vector2& B, const Vector2& P) noexcept{
     const Vector2 AP = {P.x - A.x, P.y - A.y};
     const Vector2 AB = {B.x - A.x, B.y - A.y};
     const float ab2 = AB.x * AB.x + AB.y * AB.y;
     const float ap_ab = AP.x * AB.x + AP.y * AB.y;
     float t = ap_ab / ab2;
-    if (t < 0.0f) t = 0.0f;
-    else if (t > 1.0f) t = 1.0f;
+    if(t < 0.0f) t = 0.0f;
+    else if(t > 1.0f) t = 1.0f;
     return {A.x + AB.x * t, A.y + AB.y * t};
 }
 
-bool CheckCollision(const Vector2& circlePos, float circleRadius, const Vector2& lineStart, const Vector2& lineEnd) noexcept {
-    if (pointInCircle(circlePos, circleRadius, lineStart) || pointInCircle(circlePos, circleRadius, lineEnd)) {
+bool CheckCollision(const Vector2& circlePos, float circleRadius, const Vector2& lineStart, const Vector2& lineEnd) noexcept{
+    if(pointInCircle(circlePos, circleRadius, lineStart) || pointInCircle(circlePos, circleRadius, lineEnd)){
         return true;
     }
     Vector2 closest = closestPointOnLine(lineStart, lineEnd, circlePos);
     return pointInCircle(circlePos, circleRadius, closest);
 }
 
-void Game::Start(){
-    float window_width = (float) GetScreenWidth();
-    float window_height = (float) GetScreenHeight();
-    float wall_distance = window_width / (wallCount + 1);
-    for(int i = 0; i < wallCount; i++){
-        Wall newWalls;
-        newWalls.position.y = window_height - 250;
-        newWalls.position.x = wall_distance * (i + 1);
-        Walls.push_back(newWalls);
+void Game::SpawnWalls(){
+    const auto stage_width = GetScreenWidth();
+    const auto spacing = stage_width / (WALL_COUNT + 1);
+    const auto y = GetScreenHeight() - WALL_DIST_FROM_BOTTOM;
+    Walls.reserve(WALL_COUNT);
+    for(unsigned i = 0; i < WALL_COUNT; i++){
+        const auto x = (i + 1) * spacing;
+        Walls.emplace_back(x, y);
     }
+}
+
+void Game::Start(){
+    SpawnWalls();
     SpawnAliens();
     Background newBackground;
     newBackground.Initialize(600);
@@ -131,16 +134,16 @@ void Game::Update(){
                     }
                 }
             }
-            
+
             if(p.type == EntityType::ENEMY_PROJECTILE){
                 if(CheckCollision(player.pos, player.radius, p.lineStart, p.lineEnd)){
                     p.active = false;
                     player.lives -= 1;
                 }
-            }            
+            }
 
             for(auto& w : Walls){
-                if(CheckCollision(w.position, w.radius, p.lineStart, p.lineEnd)){
+                if(CheckCollision(w.position, Wall::RADIUS, p.lineStart, p.lineEnd)){
                     p.active = false;
                     w.health -= 1;
                 }
