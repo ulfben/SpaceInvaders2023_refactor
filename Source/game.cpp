@@ -55,13 +55,12 @@ bool CheckCollision(const Vector2& circlePos, float circleRadius, const Vector2&
     return pointInCircle(circlePos, circleRadius, closest);
 }
 
-void Game::SpawnWalls(){
-    const auto stage_width = GetScreenWidth();
-    const auto spacing = stage_width / (WALL_COUNT + 1);
-    const auto y = GetScreenHeight() - WALL_DIST_FROM_BOTTOM;
+void Game::SpawnWalls(){    
+    const auto spacing = GetScreenWidthF() / (WALL_COUNT + 1);
+    const auto y = GetScreenHeightF() - WALL_DIST_FROM_BOTTOM;
     Walls.reserve(WALL_COUNT);
     for(unsigned i = 0; i < WALL_COUNT; i++){
-        const auto x = (i + 1) * spacing;
+        const auto x = spacing * toFloat(1+i);
         Walls.emplace_back(x, y);
     }
 }

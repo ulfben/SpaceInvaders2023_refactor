@@ -12,7 +12,7 @@ struct Wall{
     int health = 50;
     bool active = true; 
 
-    Wall(int x, int y) noexcept : position{toFloat(x), toFloat(y)}{};
+    Wall(float x, float y) noexcept : position{x, y}{};
 
     void Render(const Texture2D& texture) const noexcept{
         DrawTexturePro(texture,
