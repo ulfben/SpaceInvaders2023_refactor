@@ -66,18 +66,8 @@ void Game::SpawnWalls(){
     }
 }
 
-void Game::Start(){
-    SpawnWalls();
-    SpawnAliens();
-    Background newBackground;
-    newBackground.Initialize(600);
-    background = newBackground;
-    score = 0;
-    gameState = State::GAMEPLAY;
-}
-
 void Game::End(){
-    //TODO: save score, updare scoreboard
+    //TODO: save score, update scoreboard
     Projectiles.clear();
     Walls.clear();
     Aliens.clear();
@@ -94,7 +84,9 @@ void Game::Update(){
     switch(gameState){
     case State::STARTSCREEN:
         if(IsKeyReleased(KEY_SPACE)){
-            Start();
+            gameState = State::GAMEPLAY; //TODO: the game currently can not restart. I will create a state machine to handle re-init of game state.
+            SpawnWalls();
+            SpawnAliens();  
         }
         break;
     case State::GAMEPLAY:
@@ -113,11 +105,8 @@ void Game::Update(){
         }
         if(Aliens.empty()){
             SpawnAliens();
-        }
-
-        offset = distance(player.pos, {0.0f, player.pos.y}) * -1;
-        background.Update(offset / 15);
-
+        }        
+        background.Update(player.pos.x / GetScreenWidthF());
         for(auto& p : Projectiles){
             p.Update();
         }

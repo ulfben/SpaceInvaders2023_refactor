@@ -15,14 +15,23 @@ static float toFloat(int value) noexcept {
 }
 
 template <std::integral T>
-static T toInt(double value) noexcept {
+static T toInt(float value) noexcept {
     return static_cast<T>(value);
 }
 
 template <std::integral T>
-static T floor(double value) noexcept {
+static T floor(float value) noexcept {
     return toInt<T>(std::floor(value));
 }
+
+static float GetScreenWidthF() noexcept {
+    return static_cast<float>(GetScreenWidth());
+}
+
+static float GetScreenHeightF() noexcept {
+    return static_cast<float>(GetScreenHeight());
+}
+
 
 static void DrawText(std::string_view t, Vector2 pos, int fontsize, const Color& c ) noexcept{
     DrawText(t.data(), floor<int>(pos.x), floor<int>(pos.y), fontsize, c);
