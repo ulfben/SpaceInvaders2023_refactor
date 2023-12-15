@@ -83,24 +83,24 @@ void Game::Update(){
     switch(gameState){
     case State::STARTSCREEN:
         if(IsKeyReleased(KEY_SPACE)){
-            gameState = State::GAMEPLAY; //TODO: the game currently can not restart. I will create a state machine to handle re-init of game state.
+            gameState = State::GAMEPLAY; //TODO: the game currently can not restart. I will create a state machine to handle re-init of game state.            
             SpawnWalls();
             SpawnAliens();  
         }
         break;
     case State::GAMEPLAY:
         if(IsKeyReleased(KEY_Q)){
-            End();
+           return End();
         }
         player.Update();
         for(auto& a : Aliens){
             a.Update();
             if(a.position.y > player.pos.y){
-                End();
+                return End();
             }
         }
         if(player.lives < 1){
-            End();
+            return End();
         }
         if(Aliens.empty()){
             SpawnAliens();

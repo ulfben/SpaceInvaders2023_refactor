@@ -32,6 +32,11 @@ static float GetScreenHeightF() noexcept {
     return static_cast<float>(GetScreenHeight());
 }
 
+template <typename T>
+static float GetRandomValueF(T min, T max) noexcept{
+    return toFloat(GetRandomValue(static_cast<int>(min), static_cast<int>(max)));
+}
+
 
 static void DrawText(std::string_view t, Vector2 pos, int fontsize, const Color& c ) noexcept{
     DrawText(t.data(), floor<int>(pos.x), floor<int>(pos.y), fontsize, c);

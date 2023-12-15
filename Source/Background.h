@@ -2,14 +2,15 @@
 #include <vector>
 class Star{
     static constexpr auto COLOR = GRAY;        
-    Vector2 position{};
-    float size = 1.0f;
+    float _x = 0; 
+    int _y = 0;
+    float _size = 1.0f;
 public:
-    Star(int x, int y, int size) noexcept : position{toFloat(x), toFloat(y)}, size(toFloat(size)){};
+    Star(int x, int y, float size) noexcept : _x(toFloat(x)), _y(y), _size(size){};
       
     void Render(float offset) const noexcept{
-        const float scrolling_offset = offset/size;
-        DrawCircle(toInt<int>(position.x+scrolling_offset), toInt<int>(position.y), size, COLOR);
+        const float scrolling_offset = offset/_size;
+        DrawCircle(toInt<int>(_x+scrolling_offset), _y, _size, COLOR);
     }
 };
 
@@ -26,7 +27,7 @@ public:
         for(unsigned i = 0; i < starAmount; i++){
             const auto x = GetRandomValue(-MARGIN, max_x);
             const auto y = GetRandomValue(0, max_y);                
-            const auto size = GetRandomValue(1, 3);
+            const auto size = GetRandomValueF(1, 3);
             Stars.emplace_back(x, y, size);
         }
     }
