@@ -1,18 +1,20 @@
 #include "Resources.h"
 struct Projectile{
-    Vector2 position = {0,0};
-    int speed = 15;
-    bool active = true;
-    EntityType type = {};
+    static constexpr auto SPEED = 15.0f; 
+    Vector2 position{0,0};
+    float speed = SPEED;
+    bool active = true;    
     Vector2 lineStart = {0, 0};
     Vector2 lineEnd = {0, 0};
+    Projectile(Vector2 pos, float velocity = SPEED) noexcept : position(pos), speed(velocity)
+    {}
     void Update() noexcept{
-        position.y -= speed;        
+        position.y += speed;        
         lineStart.y = position.y - 15;
         lineEnd.y = position.y + 15;
         lineStart.x = position.x;
         lineEnd.x = position.x;
-        if(position.y < 0 || position.y > 1500){
+        if(position.y < 0.0f || position.y > GetScreenHeightF()){
             active = false;
         }
     }

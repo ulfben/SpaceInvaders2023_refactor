@@ -28,7 +28,8 @@ struct Game{
     Resources resources{};
     Background background{STAR_COUNT};
     Player player{};    
-    std::vector<Projectile> Projectiles;
+    std::vector<Projectile> playerProjectiles;
+    std::vector<Projectile> alienProjectiles;
     std::vector<Wall> Walls;
     std::vector<Alien> Aliens;
     std::vector<PlayerData> Leaderboard = {{"Player 1", 500}, {"Player 2", 400}, {"Player 3", 300}, {"Player 4", 200}, {"Player 5", 100}};

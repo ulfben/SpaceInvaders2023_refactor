@@ -55,19 +55,20 @@ bool CheckCollision(const Vector2& circlePos, float circleRadius, const Vector2&
     return pointInCircle(circlePos, circleRadius, closest);
 }
 
-void Game::SpawnWalls(){    
+void Game::SpawnWalls(){
     const auto spacing = GetScreenWidthF() / (WALL_COUNT + 1);
     const auto y = GetScreenHeightF() - WALL_DIST_FROM_BOTTOM;
     Walls.reserve(WALL_COUNT);
     for(unsigned i = 0; i < WALL_COUNT; i++){
-        const auto x = spacing * toFloat(1+i);
+        const auto x = spacing * toFloat(1 + i);
         Walls.emplace_back(x, y);
     }
 }
 
 void Game::End(){
     //TODO: save score, update scoreboard
-    Projectiles.clear();
+    playerProjectiles.clear();
+    alienProjectiles.clear();
     Walls.clear();
     Aliens.clear();
     newHighScore = CheckNewHighScore();
@@ -85,83 +86,80 @@ void Game::Update(){
         if(IsKeyReleased(KEY_SPACE)){
             gameState = State::GAMEPLAY; //TODO: the game currently can not restart. I will create a state machine to handle re-init of game state.            
             SpawnWalls();
-            SpawnAliens();  
+            SpawnAliens();
         }
         break;
     case State::GAMEPLAY:
-        if(IsKeyReleased(KEY_Q)){
-           return End();
+        if(IsKeyReleased(KEY_Q) || (player.lives < 1)){
+            return End();
         }
         player.Update();
+        background.Update(player.pos.x / GetScreenWidthF());
         for(auto& a : Aliens){
             a.Update();
             if(a.position.y > player.pos.y){
                 return End();
             }
         }
-        if(player.lives < 1){
-            return End();
-        }
-        if(Aliens.empty()){
-            SpawnAliens();
-        }        
-        background.Update(player.pos.x / GetScreenWidthF());
-        for(auto& p : Projectiles){
+        for(auto& p : alienProjectiles){
             p.Update();
-        }
-        for(auto& w : Walls){
-            w.Update();
-        }
-        for(auto& p : Projectiles){
-            if(p.type == EntityType::PLAYER_PROJECTILE){
-                for(auto& a : Aliens){
-                    if(CheckCollision(a.position, a.radius, p.lineStart, p.lineEnd)){
-                        p.active = false;
-                        a.active = false;
-                        score += 100;
-                    }
-                }
-            }
-
-            if(p.type == EntityType::ENEMY_PROJECTILE){
-                if(CheckCollision(player.pos, player.radius, p.lineStart, p.lineEnd)){
-                    p.active = false;
-                    player.lives -= 1;
-                }
-            }
-
             for(auto& w : Walls){
                 if(CheckCollision(w.position, Wall::RADIUS, p.lineStart, p.lineEnd)){
                     p.active = false;
                     w.health -= 1;
+                    break;
                 }
             }
+            if(!p.active){
+                continue;
+            }
+            if(CheckCollision(player.pos, player.radius, p.lineStart, p.lineEnd)){
+                p.active = false;
+                player.lives -= 1;
+            }
+        }
+        for(auto& p : playerProjectiles){
+            p.Update();
+            for(auto& w : Walls){
+                if(CheckCollision(w.position, Wall::RADIUS, p.lineStart, p.lineEnd)){
+                    p.active = false;
+                    w.health -= 1;
+                    break;
+                }
+            }
+            if(!p.active){
+                continue;
+            }
+            for(auto& a : Aliens){
+                if(CheckCollision(a.position, a.radius, p.lineStart, p.lineEnd)){
+                    p.active = false;
+                    a.active = false;
+                    score += 100;
+                    break;
+                }
+            }
+
+        }
+        for(auto& w : Walls){
+            w.Update();
         }
 
         if(IsKeyPressed(KEY_SPACE)){
-            Projectile newProjectile;
-            newProjectile.position = player.pos;
-            newProjectile.position.y -= 30.0f;
-            newProjectile.type = EntityType::PLAYER_PROJECTILE;
-            Projectiles.push_back(newProjectile);
+            auto pos = player.pos;
+            pos.y -= 30.0f;
+            playerProjectiles.emplace_back(pos, -Projectile::SPEED);
         }
 
         shootTimer += 1;
-        if(shootTimer > 59){
-            int randomAlienIndex = 0;
-            if(!Aliens.empty()){
-                randomAlienIndex = rand() % Aliens.size();
-            }
-
-            Projectile newProjectile;
-            newProjectile.position = Aliens[randomAlienIndex].position;
-            newProjectile.position.y += 40;
-            newProjectile.speed = -15;
-            newProjectile.type = EntityType::ENEMY_PROJECTILE;
-            Projectiles.push_back(newProjectile);
+        if(shootTimer > 59 && !Aliens.empty()){
+            const int i = rand() % Aliens.size();
+            auto pos = Aliens[i].position;
+            pos.y += 40;
+            alienProjectiles.emplace_back(pos);
             shootTimer = 0;
         }
-        std::erase_if(Projectiles, is_dead<Projectile>);
+        std::erase_if(playerProjectiles, is_dead<Projectile>);
+        std::erase_if(alienProjectiles, is_dead<Projectile>);
         std::erase_if(Aliens, is_dead<Alien>);
         std::erase_if(Walls, is_dead<Wall>);
         break;
@@ -219,7 +217,7 @@ void Game::Render(){
     case State::GAMEPLAY:
         background.Render();
         player.Render(resources.shipTextures[player.activeTexture].get());
-        render<Projectile>(Projectiles, resources.laserTexture);
+        render<Projectile>(playerProjectiles, resources.laserTexture);
         render<Wall>(Walls, resources.barrierTexture);
         render<Alien>(Aliens, resources.alienTexture);
         DrawText(TextFormat("Score: %i", score), 50, 20, 40, YELLOW);
@@ -230,12 +228,11 @@ void Game::Render(){
             DrawText("NEW HIGHSCORE!", 600, 300, 60, YELLOW);
             DrawText("PLACE MOUSE OVER INPUT BOX!", 600, 400, 20, YELLOW);
             DrawRectangleRec(textBox, LIGHTGRAY);
-            if(mouseOnText){
-                DrawRectangleLines((int) textBox.x, (int) textBox.y, (int) textBox.width, (int) textBox.height, RED);
-            } else{
-                DrawRectangleLines((int) textBox.x, (int) textBox.y, (int) textBox.width, (int) textBox.height, DARKGRAY);
-            }
-            DrawText(name, (int) textBox.x + 5, (int) textBox.y + 8, 40, MAROON);
+            const auto x = toInt<int>(textBox.x);
+            const auto y = toInt<int>(textBox.y);
+            const auto color = (mouseOnText) ? RED : DARKGRAY;
+            DrawRectangleLines(x, y, (int) textBox.width, (int) textBox.height, color);
+            DrawText(name, x + 5, y + 8, 40, MAROON);
             DrawText(TextFormat("INPUT CHARS: %i/%i", letterCount, 8), 600, 600, 20, YELLOW);
 
             if(mouseOnText){
@@ -256,8 +253,7 @@ void Game::Render(){
             DrawText("PRESS ENTER TO CONTINUE", 600, 200, 40, YELLOW);
             DrawText("LEADERBOARD", 50, 100, 40, YELLOW);
             for(int i = 0; i < Leaderboard.size(); i++){
-                char* tempNameDisplay = Leaderboard[i].name.data();
-                DrawText(tempNameDisplay, 50, 140 + (i * 40), 40, YELLOW);
+                DrawText(Leaderboard[i].name.c_str(), 50, 140 + (i * 40), 40, YELLOW);
                 DrawText(TextFormat("%i", Leaderboard[i].score), 350, 140 + (i * 40), 40, YELLOW);
             }
         }
