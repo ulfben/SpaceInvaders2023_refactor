@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>
 #include <span>
+#include <algorithm>
 struct Draw{
     Draw() noexcept{
         BeginDrawing();
@@ -131,7 +132,7 @@ void Game::Update(){
                 continue;
             }
             for(auto& a : Aliens){
-                if(CheckCollision(a.position, a.radius, p.lineStart, p.lineEnd)){
+                if(CheckCollision(a.position, Alien::RADIUS, p.lineStart, p.lineEnd)){
                     p.active = false;
                     a.active = false;
                     score += 100;
@@ -168,8 +169,7 @@ void Game::Update(){
             Continue();
         }
         if(newHighScore){
-            if(CheckCollisionPointRec(GetMousePosition(), textBox)) mouseOnText = true;
-            else mouseOnText = false;
+            mouseOnText = (CheckCollisionPointRec(GetMousePosition(), textBox));
             if(mouseOnText){
                 SetMouseCursor(MOUSE_CURSOR_IBEAM);
                 int key = GetCharPressed();
@@ -187,7 +187,9 @@ void Game::Update(){
                     if(letterCount < 0) letterCount = 0;
                     name[letterCount] = '\0';
                 }
-            } else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+            } else{
+                SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+            }
 
             if(mouseOnText){
                 framesCounter++;
@@ -209,6 +211,7 @@ void Game::Update(){
 
 void Game::Render(){
     Draw d{};
+    const auto i = player.activeTexture;
     switch(gameState){
     case State::STARTSCREEN:
         DrawText("SPACE INVADERS", 200, 100, 160, YELLOW);
@@ -216,7 +219,8 @@ void Game::Render(){
         break;
     case State::GAMEPLAY:
         background.Render();
-        player.Render(resources.shipTextures[player.activeTexture].get());
+        player.Render(resources.shipTextures[i].get());
+        render<Projectile>(alienProjectiles, resources.laserTexture);
         render<Projectile>(playerProjectiles, resources.laserTexture);
         render<Wall>(Walls, resources.barrierTexture);
         render<Alien>(Aliens, resources.alienTexture);
@@ -247,7 +251,6 @@ void Game::Render(){
             if(letterCount > 0 && letterCount < 9){
                 DrawText("PRESS ENTER TO CONTINUE", 600, 800, 40, YELLOW);
             }
-
         } else{
             // If no highscore or name is entered, show scoreboard and call it a day
             DrawText("PRESS ENTER TO CONTINUE", 600, 200, 40, YELLOW);
@@ -267,11 +270,9 @@ void Game::Render(){
 void Game::SpawnAliens(){
     for(int row = 0; row < formationHeight; row++){
         for(int col = 0; col < formationWidth; col++){
-            Alien newAlien = Alien();
-            newAlien.active = true;
-            newAlien.position.x = formationX + 450 + (col * alienSpacing);
-            newAlien.position.y = formationY + (row * alienSpacing);
-            Aliens.push_back(newAlien);
+            const auto x = formationX + 450 + (col * alienSpacing);
+            const auto y = formationY + (row * alienSpacing);
+            Aliens.emplace_back(toFloat(x), toFloat(y));
         }
     }
 }
@@ -280,17 +281,12 @@ bool Game::CheckNewHighScore(){ //TODO: remove
     return (score > Leaderboard[4].score);
 }
 
-void Game::InsertNewHighScore(std::string name){
-    PlayerData newData; //TODO: rewrite implementation. push new score, sort list, pop if list is too long.
-    newData.name = name;
-    newData.score = score;
-    for(int i = 0; i < Leaderboard.size(); i++){
-        if(newData.score > Leaderboard[i].score){
-            Leaderboard.insert(Leaderboard.begin() + i, newData);
-            Leaderboard.pop_back();
-            i = Leaderboard.size();
-        }
-    }
+void Game::InsertNewHighScore(const std::string& name){
+    Leaderboard.emplace_back(name, score);
+    std::ranges::sort(Leaderboard, [](const auto& a, const auto& b){
+        return a.score < b.score;
+        });
+    Leaderboard.pop_back();
 }
 
 void Game::LoadLeaderboard(){

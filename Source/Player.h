@@ -39,8 +39,7 @@ struct Player{
         }
     }
 
-    void Render(const Texture2D& texture) const noexcept{
-        float window_height = GetScreenHeight();
+    void Render(const Texture2D& texture) const noexcept{        
         DrawTexturePro(texture,
                 {0,0,352,352,}, {pos.x, pos.y,100,100,}, 
                 {50, 50},0,WHITE
