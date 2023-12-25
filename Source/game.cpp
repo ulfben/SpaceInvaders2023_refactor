@@ -14,7 +14,7 @@ struct Draw{
     }
 };
 
-bool is_dead(const auto& p){
+bool is_dead(const auto& p) noexcept{
     return !p.active;
 };
 
@@ -42,9 +42,7 @@ Vector2 closestPointOnLine(const Vector2& A, const Vector2& B, const Vector2& P)
     const Vector2 AB = {B.x - A.x, B.y - A.y};
     const float ab2 = AB.x * AB.x + AB.y * AB.y;
     const float ap_ab = AP.x * AB.x + AP.y * AB.y;
-    float t = ap_ab / ab2;
-    if(t < 0.0f) t = 0.0f;
-    else if(t > 1.0f) t = 1.0f;
+    const float t = std::clamp(ap_ab / ab2, 0.0f, 1.0f);
     return {A.x + AB.x * t, A.y + AB.y * t};
 }
 
