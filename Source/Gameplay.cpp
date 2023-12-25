@@ -71,17 +71,19 @@ Gameplay::Gameplay(){
     Spawn(Aliens);
 }
 
-
+bool Gameplay::isGameOver() const noexcept{
+    return IsKeyReleased(KEY_Q) || (player.lives < 1) || Aliens.empty();
+}
 State* Gameplay::update() noexcept{
-    if(IsKeyReleased(KEY_Q) || (player.lives < 1)){
-        return nullptr;
+    if(isGameOver()){
+        return new EndScreen();
     }
     player.Update();
     background.Update(player.pos.x / GetScreenWidthF());
     for(auto& a : Aliens){
         a.Update();
         if(a.position.y > player.pos.y){
-            return nullptr;
+            return new EndScreen();
         }
     }
     for(auto& p : alienProjectiles){

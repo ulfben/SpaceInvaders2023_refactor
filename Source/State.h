@@ -33,6 +33,8 @@ struct Gameplay : public State{
     Gameplay();
     State* update() noexcept override;
     void render() const noexcept override;
+private:
+    bool isGameOver() const noexcept;
 };
 
 struct StartScreen : public State{
@@ -50,7 +52,6 @@ struct StartScreen : public State{
 
 struct EndScreen : public State{
     std::vector<PlayerData> Leaderboard = {{"Player 1", 500}, {"Player 2", 400}, {"Player 3", 300}, {"Player 4", 200}, {"Player 5", 100}};
-    static constexpr size_t CHAR_COUNT = 9;
     std::string name;
     Rectangle textBox = {600, 500, 225, 50};
     bool newHighScore = false;
@@ -61,12 +62,12 @@ struct EndScreen : public State{
 
     State* update() noexcept override{
         if(IsKeyReleased(KEY_ENTER) && !newHighScore){
-                //TODO: save leaderboard
+            //TODO: save leaderboard
             return new StartScreen();
         }
-        if(!newHighScore){
+    /*    if(!newHighScore){
             return nullptr;
-        }
+        }*/
         if(mouseOnText()){
             SetMouseCursor(MOUSE_CURSOR_IBEAM);
             for(int key = GetCharPressed(); key > 0; key = GetCharPressed()){
@@ -89,7 +90,7 @@ struct EndScreen : public State{
     }
 
     void render() const noexcept override{
-        if(!newHighScore){
+        /*if(!newHighScore){
             DrawText("PRESS ENTER TO CONTINUE", 600, 200, 40, YELLOW);
             DrawText("LEADERBOARD", 50, 100, 40, YELLOW);
             for(int i = 0; i < Leaderboard.size(); i++){
@@ -97,7 +98,7 @@ struct EndScreen : public State{
                 DrawText(TextFormat("%i", Leaderboard[i].score), 350, 140 + (i * 40), 40, YELLOW);
             }
             return;
-        }
+        }*/
         DrawText("NEW HIGHSCORE!", 600, 300, 60, YELLOW);
         DrawText("PLACE MOUSE OVER INPUT BOX!", 600, 400, 20, YELLOW);
         DrawRectangleRec(textBox, LIGHTGRAY);
