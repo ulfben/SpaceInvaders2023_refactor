@@ -23,10 +23,7 @@ int main(void) {
     try {
         Window w{TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, FPS};        
         Game game{};
-        while (!WindowShouldClose()) {
-            game.Update();          
-            game.Render();        
-        }        
+        game.run();
     }
     catch (const std::runtime_error& e) {
         std::println("{}", e.what());
