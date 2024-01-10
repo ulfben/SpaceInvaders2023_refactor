@@ -19,7 +19,7 @@ struct DrawGuard{
 };
 
 
-void Game::run(){
+void Game::run() noexcept{
     while(!w.shouldClose()){
         Update();
         Render();
@@ -38,23 +38,23 @@ void Game::Render() const noexcept{
     state->render();
 }
 
-bool Game::CheckNewHighScore(){ //TODO: remove 
-    return false;
-    //return (score > Leaderboard.back().score);
-}
-
-void Game::InsertNewHighScore(const std::string& name){
-    /*Leaderboard.emplace_back(name, score);
-    std::ranges::sort(Leaderboard, [](const auto& a, const auto& b){
-        return a.score < b.score;
-        });
-    Leaderboard.pop_back();*/
-}
-
-void Game::LoadLeaderboard(){
-  //TODO: implement leaderboard loading
-}
-
-void Game::SaveLeaderboard(){
-  //TODO: implement leaderboard saving
-}
+//bool Game::CheckNewHighScore() noexcept{ 
+//    return false;
+//    //return (score > Leaderboard.back().score);
+//}
+//
+//void Game::InsertNewHighScore(const std::string& name) noexcept{
+//    /*Leaderboard.emplace_back(name, score);
+//    std::ranges::sort(Leaderboard, [](const auto& a, const auto& b){
+//        return a.score < b.score;
+//        });
+//    Leaderboard.pop_back();*/
+//}
+//
+//void Game::LoadLeaderboard(){
+//  //TODO: implement leaderboard loading
+//}
+//
+//void Game::SaveLeaderboard(){
+//  //TODO: implement leaderboard saving
+//}

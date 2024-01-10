@@ -13,7 +13,7 @@ struct Animation{
 
     explicit Animation(std::span<const std::string_view> paths){
         frames.reserve(paths.size());
-        for(auto& path : paths){
+        for(auto path : paths){
             frames.emplace_back(path);
         }
     }
@@ -26,6 +26,7 @@ struct Animation{
         }
     }
     const Texture2D& currentFrame() const noexcept{
+        [[gsl::suppress(bounds.4, justification: "Animation owns and guarantuees that the index is valid.")]]
         return frames[current].get();
     }
     float width() const noexcept{

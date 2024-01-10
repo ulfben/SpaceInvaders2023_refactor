@@ -31,6 +31,7 @@ public:
     // rejection sampling to ensure uniformity.
 
     constexpr explicit RNG(u64 seed) noexcept{
+        [[gsl::suppress(bounds.4, justification: "RNG owns the state array and guarantuees that the index is valid.")]]
         s[0] = splitmix64(seed);
         seed += 0x9E3779B97F4A7C15uLL;
         s[1] = splitmix64(seed);
@@ -108,6 +109,7 @@ private:
     std::array<u64, SEED_COUNT> s{};
 
     constexpr u64 nextU64() noexcept{
+        [[gsl::suppress(bounds.4, justification: "RNG owns the state array and guarantuees that the indexing is valid.")]]
         const u64 result = rotl(s[1] * 5, 7) * 9;
         const u64 t = s[1] << 17;
         s[2] ^= s[0];
@@ -147,13 +149,13 @@ private:
 
 //Some strategies for seeding the full 256-bit state of xoshiro256.
 // createSeeds uses date, time-since-launch, CPU time, thread ID, and a memory address as sources of entropy.
-static std::array<RNG::u64, RNG::SEED_COUNT> createSeeds() {
+static std::array<RNG::u64, RNG::SEED_COUNT> createSeeds() noexcept {
     using u64 = RNG::u64;
     using namespace std::chrono;
-    auto current_date = system_clock::now().time_since_epoch().count();
-    auto cpu_time = static_cast<u64>(std::clock());
-    auto uptime = high_resolution_clock::now().time_since_epoch().count();
-    auto mixed_time = (static_cast<u64>(uptime) << 1) ^ static_cast<u64>(current_date);
+    const auto current_date = system_clock::now().time_since_epoch().count();
+    const auto cpu_time = static_cast<u64>(std::clock());
+    const auto uptime = high_resolution_clock::now().time_since_epoch().count();
+    const auto mixed_time = (static_cast<u64>(uptime) << 1) ^ static_cast<u64>(current_date);
     int local{};
     return {
         std::hash<u64>()(mixed_time),

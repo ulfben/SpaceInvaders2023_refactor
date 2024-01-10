@@ -11,7 +11,7 @@ constexpr std::string_view TITLE = "Space Invaders"sv;
 struct Game{  
     Window w{TITLE, WINDOW_WIDTH, WINDOW_HEIGHT, FPS};        
     std::unique_ptr<State> state = std::make_unique<StartScreen>();    
-    void run();
+    void run() noexcept;
     
 private:
     void Update() noexcept;

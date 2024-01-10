@@ -10,9 +10,10 @@
 #include "RNG.h"
 
 template<typename Container>
-static const auto& random(const Container& container){
+static const auto& random(const Container& container) noexcept{    
     static RNG random(createSeeds()); //Note: I absolutely should have used raylibs' GetRandomValue, but I needed to test my own RNG so... 
     const auto index = random.inRange(container.size());
+    [[gsl::suppress(bounds.4, justification: "index is guarantueed to be valid.")]]
     return container[index];
 }
 
@@ -35,7 +36,7 @@ static constexpr void update_all(std::span<T> entities) noexcept{
 };
 
 void Spawn(std::vector<Wall>& Walls){
-    const float totalWallWidth = WALL_COUNT * Wall::WIDTH;
+    constexpr float totalWallWidth = WALL_COUNT * Wall::WIDTH;
     const float spaceAvailable = GetScreenWidthF() - totalWallWidth;
     const float spacing = spaceAvailable / (WALL_COUNT + 1);
     const float y = GetScreenHeightF() - WALL_DIST_FROM_BOTTOM;
@@ -48,7 +49,7 @@ void Spawn(std::vector<Wall>& Walls){
 
 void Spawn(std::vector<Alien>& Aliens){
     Aliens.reserve(ALIEN_COUNT);
-    const auto formationWidth = ALIEN_COLUMNS * ALIEN_SPACING;
+    constexpr auto formationWidth = ALIEN_COLUMNS * ALIEN_SPACING;
     const auto left = (GetScreenWidth() / 2) - (formationWidth / 2);
     for(unsigned row = 0; row < ALIEN_ROWS; row++){
         for(unsigned col = 0; col < ALIEN_COLUMNS; col++){

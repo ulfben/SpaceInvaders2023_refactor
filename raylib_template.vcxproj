@@ -83,6 +83,7 @@
     <LibraryPath>$(SolutionDir)External\raylib\lib;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir)External\raylib\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <IntDir>Build\Intermediate\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Build\$(Configuration)\</OutDir>

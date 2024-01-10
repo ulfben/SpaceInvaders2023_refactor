@@ -113,7 +113,7 @@ struct EndScreen : public State{
         const auto x = toInt<int>(textBox.x);
         const auto y = toInt<int>(textBox.y);
         const auto color = mouseOnText() ? RED : DARKGRAY;
-        DrawRectangleLines(x, y, (int) textBox.width, (int) textBox.height, color);
+        DrawRectangleLines(x, y, toInt<int>(textBox.width), toInt<int>(textBox.height), color);
         DrawText(name.c_str(), x + 5, y + 8, 40, MAROON);       
         if(!name.empty()){
             DrawText("PRESS ENTER TO CONTINUE", 600, 800, 40, YELLOW);
