@@ -12,13 +12,15 @@ using namespace std::literals::string_view_literals;
 static constexpr unsigned STAR_COUNT = 600;
 static constexpr unsigned WALL_COUNT = 5;
 static constexpr unsigned WALL_DIST_FROM_BOTTOM = 250;
+static constexpr unsigned WALL_MARGIN = 125; //distance to edge of screen
 static constexpr unsigned short ALIEN_COLUMNS = 2;
 static constexpr unsigned short ALIEN_ROWS = 2;
 static constexpr size_t ALIEN_COUNT = ALIEN_COLUMNS * ALIEN_ROWS;
-static constexpr unsigned ALIEN_SPACING = 80;
-static constexpr unsigned ALIEN_FORMATION_LEFT = 550;
+static constexpr unsigned ALIEN_SPACING = 100;
 static constexpr unsigned ALIEN_FORMATION_TOP = 50;
 static constexpr int ALIEN_SHOT_COOLDOWN = 60; //frames
+static constexpr int POINTS_PER_ALIEN = 100;
+
 static constexpr std::array PlayerAnimationFiles = {
     "./Assets/Ship1.png"sv,
     "./Assets/Ship2.png"sv,
@@ -111,6 +113,9 @@ public:
     }
     float height() const noexcept{
         return static_cast<float>(_tex.height);
+    }
+    Rectangle rect() const noexcept{
+        return Rectangle{0, 0, width(), height()};
     }
 };
 

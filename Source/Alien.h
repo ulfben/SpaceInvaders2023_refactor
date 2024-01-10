@@ -1,13 +1,11 @@
 #include "Resources.h"
 
-struct Alien{    
-    static constexpr float SPEED = 2.0f;
-    static constexpr float RADIUS = 30.0f;
-    static constexpr float GRID = 50.0f;    
-    
-    Vector2 position = {0, 0};
+struct Alien{            
+    static constexpr int WIDTH = 94; //TODO: these should be read from the sprite... 
+    static constexpr int HEIGHT = 54;    
+    Vector2 position = {0, 0};    
+    float velocity = 2.0f;
     bool active = true;
-    float velocity = SPEED;
 
     Alien(float x, float y) noexcept : position{x, y}{}
 
@@ -17,28 +15,38 @@ struct Alien{
     float y() const noexcept{
         return position.y;
     }
-    Vector2 gunPosition() const noexcept{
-        return {x(), y() + RADIUS};
+    float bottom() const noexcept{
+        return y() + HEIGHT;
+    }
+    float right() const noexcept{
+        return x() + WIDTH;
+    }
+    float centerX() const noexcept{
+        return x() + WIDTH / 2.0f;
     }
     
+    Vector2 gunPosition() const noexcept{
+        return {centerX(), bottom()};
+    }
+    
+    Rectangle hitBox() const noexcept{
+        return {x(), y(), WIDTH, HEIGHT};
+    }
 
     void Update() noexcept{
         position.x += velocity;
         if(should_turn()){
             velocity *= -1.0f;
-            position.y += GRID;
+            position.y += HEIGHT;
         }
     }
 
     void Render(const Texture2D& texture) const noexcept{
-        DrawTexturePro(texture,
-            {0,0,352,352,}, {x(), y(), 100, 100},
-            {50 , 50}, 0, WHITE
-        );
+        DrawTexture(texture, position);
     }
 
     bool should_turn() const noexcept{
-        return (x() < RADIUS || x() > GetScreenWidthF() - RADIUS);
+        return (x() < 0 || right() > GetScreenWidthF());
     }
 
     bool isAlive() const noexcept{

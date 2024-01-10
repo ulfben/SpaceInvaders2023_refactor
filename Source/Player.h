@@ -28,36 +28,61 @@ struct Animation{
     const Texture2D& currentFrame() const noexcept{
         return frames[current].get();
     }
+    float width() const noexcept{
+        return toFloat(currentFrame().width);
+    }
+    float height() const noexcept{
+        return toFloat(currentFrame().height);
+    }
 };
 
 struct Player{
     static constexpr float SPEED = 7;
-    static constexpr float RADIUS = 50;
+    static constexpr float WIDTH = 94;
+    static constexpr float HEIGHT = 97;
     Animation animation{PlayerAnimationFiles};
-    Vector2 pos{GetScreenWidthF() / 2.0f, GetScreenHeightF() - RADIUS};
+    Vector2 position{GetScreenWidthF() / 2.0f, GetScreenHeightF() - HEIGHT};
     int lives = 3;     
 
     float x() const noexcept{
-        return pos.x;
+        return position.x;
     }
     float y() const noexcept{
-        return pos.y;
+        return position.y;
+    }
+    float width() const noexcept{
+        return animation.width();
+    }
+    float height() const noexcept{
+        return animation.height();
+    }
+    float right() const noexcept{
+        return x() + width();
+    }
+    float left() const noexcept{
+        return x();
+    }
+    float top() const noexcept{ 
+        return y();
+    }
+    float centerX() const noexcept{
+        return x() + animation.width() / 2.0f;
     }
     Vector2 gunPosition() const noexcept{
-        return {x(), y() - RADIUS};
+        return {centerX(), top() };
     }
     Rectangle hitbox() const noexcept{
-        return {x() - RADIUS, y() - RADIUS, RADIUS * 2, RADIUS * 2};
+        return {x(), y(), animation.width(), animation.height()};
     }
 
     void Update() noexcept{
         const auto direction = IsKeyDown(KEY_LEFT) ? -1.0f : (IsKeyDown(KEY_RIGHT) ? 1.0f : 0.0f);
-        pos.x += SPEED * direction;
-        pos.x = std::clamp(x(), RADIUS, GetScreenWidthF() - RADIUS);
+        position.x += SPEED * direction;
+        position.x = std::clamp(x(), 0.0f, GetScreenWidthF()-width());
         animation.update();
     }
 
     void Render() const noexcept{        
-        DrawTexture(animation.currentFrame(), x()-RADIUS, y()-RADIUS);  
+        DrawTexture(animation.currentFrame(), position);  
     }
 };
