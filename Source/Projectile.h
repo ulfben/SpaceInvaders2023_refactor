@@ -25,4 +25,8 @@ struct Projectile{
             {25 , 25}, 0, WHITE
         );
     }
+
+    bool isAlive() const noexcept{
+        return active;
+    }
 };

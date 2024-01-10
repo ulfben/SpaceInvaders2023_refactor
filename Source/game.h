@@ -6,8 +6,8 @@ struct Game{
     void run();
     
 private:
-    void Update();
-    void Render();
+    void Update() noexcept;
+    void Render() const noexcept;
     bool CheckNewHighScore();
     void InsertNewHighScore(const std::string& name);
     void LoadLeaderboard();

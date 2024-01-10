@@ -7,7 +7,7 @@
 #include <span>
 #include <vector>
 static constexpr bool is_dead(const auto& p) noexcept{
-    return !p.active;
+    return !p.isAlive();
 };
 
 template<typename T>
@@ -74,18 +74,40 @@ Gameplay::Gameplay(){
 bool Gameplay::isGameOver() const noexcept{
     return IsKeyReleased(KEY_Q) || (player.lives < 1) || Aliens.empty();
 }
-State* Gameplay::update() noexcept{
+
+std::unique_ptr<State> Gameplay::update() noexcept{
     if(isGameOver()){
-        return new EndScreen();
+        return std::make_unique<EndScreen>();
     }
     player.Update();
-    background.Update(player.pos.x / GetScreenWidthF());
+    background.Update(player.x() / GetScreenWidthF());
     for(auto& a : Aliens){
         a.Update();
-        if(a.position.y > player.pos.y){
-            return new EndScreen();
+        if(a.y() > player.y()){
+            return std::make_unique<EndScreen>();
         }
     }
+    updateAlienProjectiles();
+    updatePlayerProjectiles();
+
+    if(IsKeyPressed(KEY_SPACE)){
+        playerProjectiles.emplace_back(player.gunPosition(), -Projectile::SPEED);
+    }
+
+    shootTimer += 1;
+    if(shootTimer > 59 && !Aliens.empty()){
+        const int i = std::rand() % Aliens.size();        
+        alienProjectiles.emplace_back(Aliens[i].gunPosition());
+        shootTimer = 0;
+    }
+    std::erase_if(playerProjectiles, is_dead<Projectile>);
+    std::erase_if(alienProjectiles, is_dead<Projectile>);
+    std::erase_if(Aliens, is_dead<Alien>);
+    std::erase_if(Walls, is_dead<Wall>);
+    return nullptr;
+}
+
+void Gameplay::updateAlienProjectiles() noexcept{
     for(auto& p : alienProjectiles){
         p.Update();
         for(auto& w : Walls){
@@ -95,14 +117,14 @@ State* Gameplay::update() noexcept{
                 break;
             }
         }
-        if(!p.active){
-            continue;
-        }
-        if(CheckCollision(player.pos, player.radius, p.lineStart, p.lineEnd)){
+        if(p.active && CheckCollision(player.pos, player.radius, p.lineStart, p.lineEnd)){
             p.active = false;
             player.lives -= 1;
         }
     }
+}
+
+void Gameplay::updatePlayerProjectiles() noexcept{
     for(auto& p : playerProjectiles){
         p.Update();
         for(auto& w : Walls){
@@ -123,32 +145,9 @@ State* Gameplay::update() noexcept{
                 break;
             }
         }
-
     }
-    for(auto& w : Walls){
-        w.Update();
-    }
-
-    if(IsKeyPressed(KEY_SPACE)){
-        auto pos = player.pos;
-        pos.y -= 30.0f;
-        playerProjectiles.emplace_back(pos, -Projectile::SPEED);
-    }
-
-    shootTimer += 1;
-    if(shootTimer > 59 && !Aliens.empty()){
-        const int i = rand() % Aliens.size();
-        auto pos = Aliens[i].position;
-        pos.y += 40;
-        alienProjectiles.emplace_back(pos);
-        shootTimer = 0;
-    }
-    std::erase_if(playerProjectiles, is_dead<Projectile>);
-    std::erase_if(alienProjectiles, is_dead<Projectile>);
-    std::erase_if(Aliens, is_dead<Alien>);
-    std::erase_if(Walls, is_dead<Wall>);
-    return nullptr;
 }
+
 void Gameplay::render() const noexcept{
     const auto i = player.activeTexture;
     background.Render();

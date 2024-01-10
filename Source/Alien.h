@@ -8,23 +8,37 @@ struct Alien{
     float velocity = SPEED;
 
     Alien(float x, float y) noexcept : position{x, y}{}
+    
+    float x() const noexcept{
+        return position.x;
+    }
+    float y() const noexcept{
+        return position.y;
+    }
+    Vector2 gunPosition() const noexcept{
+        return {x(), y() + RADIUS};
+    }
 
     void Update() noexcept{
         position.x += velocity;
         if(should_turn()){
             velocity *= -1.0f;
-            position.y += GRID;            
-        }                
+            position.y += GRID;
+        }
     }
 
     void Render(const Texture2D& texture) const noexcept{
         DrawTexturePro(texture,
-            {0,0,352,352,}, {position.x, position.y, 100, 100},
+            {0,0,352,352,}, {x(), y(), 100, 100},
             {50 , 50}, 0, WHITE
         );
     }
 
     bool should_turn() const noexcept{
-        return (position.x < RADIUS || position.x > GetScreenWidthF() - RADIUS);
+        return (y() < RADIUS || x() > GetScreenWidthF() - RADIUS);
+    }
+
+    bool isAlive() const noexcept{
+        return active;
     }
 };

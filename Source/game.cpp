@@ -22,15 +22,14 @@ void Game::run(){
     }
 }
 
-void Game::Update(){
-    State* next = state->update();
-    if(next){
-        //state->exit();
-        state.reset(next);
+void Game::Update() noexcept{
+    auto next = state->update();
+    if(next){              
+        state.reset(next.release());
     }
 }
 
-void Game::Render(){
+void Game::Render() const noexcept{
     Draw d{};
     state->render();
 }
@@ -43,11 +42,11 @@ bool Game::CheckNewHighScore(){ //TODO: remove
 }
 
 void Game::InsertNewHighScore(const std::string& name){
-    //Leaderboard.emplace_back(name, score);
-    //std::ranges::sort(Leaderboard, [](const auto& a, const auto& b){
-    //    return a.score < b.score;
-    //    });
-    //Leaderboard.pop_back();
+    /*Leaderboard.emplace_back(name, score);
+    std::ranges::sort(Leaderboard, [](const auto& a, const auto& b){
+        return a.score < b.score;
+        });
+    Leaderboard.pop_back();*/
 }
 
 void Game::LoadLeaderboard(){

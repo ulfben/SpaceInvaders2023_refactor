@@ -10,7 +10,6 @@ struct Wall{
     static constexpr float HEIGHT = 200;
     Vector2 position;    
     int health = 50;
-    bool active = true; 
 
     Wall(float x, float y) noexcept : position{x, y}{};
 
@@ -23,7 +22,7 @@ struct Wall{
         DrawText(TextFormat("%i", health), label_pos, 40, RED);
     }
 
-    void Update() noexcept{
-        active = (health > 0);
+    bool isAlive() const noexcept{
+        return health > 0;
     }
 };

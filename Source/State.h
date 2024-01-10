@@ -15,7 +15,7 @@ struct PlayerData{
 };
 
 struct State{
-    virtual State* update() noexcept = 0;
+    virtual std::unique_ptr<State> update() noexcept = 0;
     virtual void render() const noexcept = 0;
     virtual ~State() noexcept = default;
 };
@@ -31,16 +31,18 @@ struct Gameplay : public State{
     std::vector<Wall> Walls;
     std::vector<Alien> Aliens;
     Gameplay();
-    State* update() noexcept override;
+    std::unique_ptr<State> update() noexcept override;
     void render() const noexcept override;
 private:
     bool isGameOver() const noexcept;
+    void updateAlienProjectiles() noexcept;
+    void updatePlayerProjectiles() noexcept;
 };
 
 struct StartScreen : public State{
-    State* update() noexcept override{
+    std::unique_ptr<State> update() noexcept override{
         if(IsKeyReleased(KEY_SPACE)){
-            return new Gameplay();
+            return std::make_unique<Gameplay>();
         }
         return nullptr;
     }
@@ -60,10 +62,10 @@ struct EndScreen : public State{
         return CheckCollisionPointRec(GetMousePosition(), textBox);
     }
 
-    State* update() noexcept override{
+    std::unique_ptr<State> update() noexcept override{
         if(IsKeyReleased(KEY_ENTER) && !newHighScore){
             //TODO: save leaderboard
-            return new StartScreen();
+            return std::make_unique<StartScreen>();
         }
     /*    if(!newHighScore){
             return nullptr;
