@@ -65,7 +65,7 @@ Gameplay::Gameplay(){
 }
 
 bool Gameplay::isGameOver() const noexcept{
-    const auto reachedPlayer = [py = player.y()](const Alien& a) noexcept{ return a.bottom() > py; };
+    const auto reachedPlayer = [pt = player.top()](const Alien& a) noexcept{ return a.bottom() > pt; };
     return IsKeyReleased(KEY_Q) || (player.lives < 1) || aliens.empty() ||
         std::ranges::any_of(aliens, reachedPlayer);
 }
@@ -94,46 +94,50 @@ void Gameplay::render() const noexcept{
 }
 
 void Gameplay::updateAlienProjectiles() noexcept{
-    for(auto& p : alienProjectiles){
-        p.Update();
-        const auto projectile = p.hitBox();
-        for(auto& w : walls){
-            if(CheckCollisionRecs(w.hitBox(), projectile)){
-                p.active = false;
-                w.health--;
-                break;
-            }
-        }
-        if(p.active && CheckCollisionRecs(player.hitbox(), projectile)){
-            p.active = false;
-            player.lives--;
+    for(auto& ap : alienProjectiles){
+        ap.Update();        
+        if(collidesWithWalls(ap.hitBox()) || collidesWithPlayer(ap.hitBox())){
+            ap.active = false;
         }
     }
 }
 
 void Gameplay::updatePlayerProjectiles() noexcept{
-    for(auto& p : playerProjectiles){
-        p.Update();
-        const auto projectile = p.hitBox();
-        for(auto& w : walls){
-            if(CheckCollisionRecs(w.hitBox(), projectile)){
-                p.active = false;
-                w.health--;
-                break;
-            }
-        }
-        if(!p.active){
-            continue;
-        }
-        for(auto& a : aliens){
-            if(CheckCollisionRecs(a.hitBox(), projectile)){
-                p.active = false;
-                a.active = false;
-                score += POINTS_PER_ALIEN;
-                break;
-            }
+    for(auto& pp : playerProjectiles){
+        pp.Update();        
+        if(collidesWithWalls(pp.hitBox()) || collidesWithAliens(pp.hitBox())){
+            pp.active = false;
         }
     }
+}
+
+bool Gameplay::collidesWithWalls(const Rectangle& r) noexcept{
+    for(auto& w : walls){
+        if(CheckCollisionRecs(w.hitBox(), r)){
+            w.health--;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Gameplay::collidesWithAliens(const Rectangle& r) noexcept{
+    for(auto& a : aliens){
+        if(CheckCollisionRecs(a.hitBox(), r)){            
+            a.active = false;
+            score += POINTS_PER_ALIEN;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Gameplay::collidesWithPlayer(const Rectangle& r) noexcept{
+    if(CheckCollisionRecs(player.hitbox(), r)){
+        player.lives--;
+        return true;
+    }
+    return false;
 }
 
 void Gameplay::maybePlayerShoots() noexcept{
@@ -144,8 +148,6 @@ void Gameplay::maybePlayerShoots() noexcept{
         playerProjectiles.emplace_back(player.gunPosition(), -Projectile::SPEED);
     } catch(...){/*swallowing the exception. The game can keep running without this projectile*/ }
 }
-
-
 
 void Gameplay::maybeAliensShoots() noexcept{
     if(alienShotCooldown-- || aliens.empty()){

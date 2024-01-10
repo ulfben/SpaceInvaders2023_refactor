@@ -37,6 +37,9 @@ private:
     bool isGameOver() const noexcept;
     void updateAlienProjectiles() noexcept;
     void updatePlayerProjectiles() noexcept;
+    bool collidesWithPlayer(const Rectangle& r) noexcept;
+    bool collidesWithWalls(const Rectangle& r) noexcept;
+    bool collidesWithAliens(const Rectangle& r) noexcept;
     void maybeAliensShoots() noexcept;
     void maybePlayerShoots() noexcept;
     void eraseDeadEntities() noexcept;
