@@ -1,14 +1,16 @@
 #include "Resources.h"
-struct Alien{
+
+struct Alien{    
     static constexpr float SPEED = 2.0f;
     static constexpr float RADIUS = 30.0f;
-    static constexpr float GRID = 50.0f;
+    static constexpr float GRID = 50.0f;    
+    
     Vector2 position = {0, 0};
     bool active = true;
     float velocity = SPEED;
 
     Alien(float x, float y) noexcept : position{x, y}{}
-    
+
     float x() const noexcept{
         return position.x;
     }
@@ -18,6 +20,7 @@ struct Alien{
     Vector2 gunPosition() const noexcept{
         return {x(), y() + RADIUS};
     }
+    
 
     void Update() noexcept{
         position.x += velocity;
@@ -35,7 +38,7 @@ struct Alien{
     }
 
     bool should_turn() const noexcept{
-        return (y() < RADIUS || x() > GetScreenWidthF() - RADIUS);
+        return (x() < RADIUS || x() > GetScreenWidthF() - RADIUS);
     }
 
     bool isAlive() const noexcept{

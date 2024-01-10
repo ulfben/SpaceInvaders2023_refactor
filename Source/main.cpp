@@ -6,7 +6,7 @@ int main(void) {
     try {        
         Game game{};
         game.run();
-    }
+    }  
     catch (const std::runtime_error& e) {
         std::println("{}", e.what());
     }

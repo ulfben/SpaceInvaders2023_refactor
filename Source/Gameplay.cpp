@@ -10,7 +10,7 @@
 #include "RNG.h"
 
 template<typename Container>
-auto random(const Container& container) -> const typename Container::value_type& {
+static const auto& random(const Container& container){
     static RNG random(createSeeds()); //Note: I absolutely should have used raylibs' GetRandomValue, but I needed to test my own RNG so... 
     const auto index = random.inRange(container.size());
     return container[index];
@@ -24,6 +24,13 @@ template<typename T>
 static constexpr void render_all(std::span<const T> entities, const OwnTexture& tex) noexcept{
     for(const T& e : entities){
         e.Render(tex.get());
+    }
+};
+
+template<typename T>
+static constexpr void update_all(std::span<T> entities) noexcept{
+    for(T& e : entities){
+        e.Update();
     }
 };
 
@@ -66,15 +73,15 @@ void Spawn(std::vector<Wall>& Walls){
     }
 }
 void Spawn(std::vector<Alien>& Aliens){
-    for(int row = 0; row < formationHeight; row++){
-        for(int col = 0; col < formationWidth; col++){
-            const auto x = formationX + 450 + (col * alienSpacing);
-            const auto y = formationY + (row * alienSpacing);
+    Aliens.reserve(ALIEN_COUNT);
+    for(unsigned row = 0; row < ALIEN_ROWS; row++){
+        for(unsigned col = 0; col < ALIEN_COLUMNS; col++){
+            const auto x = ALIEN_FORMATION_LEFT + (col * ALIEN_SPACING);
+            const auto y = ALIEN_FORMATION_TOP + (row * ALIEN_SPACING);
             Aliens.emplace_back(toFloat(x), toFloat(y));
         }
     }
 }
-
 
 Gameplay::Gameplay(){
     Spawn(walls);
@@ -82,48 +89,49 @@ Gameplay::Gameplay(){
 }
 
 bool Gameplay::isGameOver() const noexcept{
-    return IsKeyReleased(KEY_Q) || (player.lives < 1) || aliens.empty();
+    const auto reachedPlayer = [py = player.y()](const Alien& a) noexcept{ return a.y() > py; };
+    return IsKeyReleased(KEY_Q) || (player.lives < 1) || aliens.empty() ||
+        std::ranges::any_of(aliens, reachedPlayer);
 }
 
-std::unique_ptr<State> Gameplay::update() noexcept{
-    if(isGameOver()){
-        return std::make_unique<EndScreen>();
-    }
+std::unique_ptr<State> Gameplay::update() noexcept{    
     player.Update();
     background.Update(player.x() / GetScreenWidthF());
-    for(auto& a : aliens){
-        a.Update();
-        if(a.y() > player.y()){
-            return std::make_unique<EndScreen>();
-        }
-    }
+    update_all<Alien>(aliens);
     updateAlienProjectiles();
     updatePlayerProjectiles();
+    maybePlayerShoots();
+    maybeAliensShoots();
+    eraseDeadEntities();
+    return isGameOver() ? std::make_unique<EndScreen>() : nullptr;
+}
 
-    if(IsKeyPressed(KEY_SPACE)){
-        playerProjectiles.emplace_back(player.gunPosition(), -Projectile::SPEED);
-    }
-
-    maybeAliensFire();
-
-    std::erase_if(playerProjectiles, is_dead<Projectile>);
-    std::erase_if(alienProjectiles, is_dead<Projectile>);
-    std::erase_if(aliens, is_dead<Alien>);
-    std::erase_if(walls, is_dead<Wall>);
-    return nullptr;
+void Gameplay::render() const noexcept{
+    background.Render();
+    player.Render();
+    render_all<Projectile>(alienProjectiles, resources.laserTexture);
+    render_all<Projectile>(playerProjectiles, resources.laserTexture);
+    render_all<Wall>(walls, resources.barrierTexture);
+    render_all<Alien>(aliens, resources.alienTexture);
+    DrawText(TextFormat("Score: %i", score), 50, 20, 40, YELLOW);
+    DrawText(TextFormat("Lives: %i", player.lives), 50, 70, 40, YELLOW);
 }
 
 void Gameplay::updateAlienProjectiles() noexcept{
     for(auto& p : alienProjectiles){
         p.Update();
+        const auto& wallTexture = resources.barrierTexture.get();
+        const auto& projectileTexture = resources.laserTexture.get();
+        const auto beamHull = MakeCollisionHull(projectileTexture, p.position);
         for(auto& w : walls){
-            if(CheckCollision(w.position, Wall::RADIUS, p.lineStart, p.lineEnd)){
+            const auto hull = MakeCollisionHull(wallTexture, w.position);            
+            if(CheckCollisionRecs(hull, beamHull)){
                 p.active = false;
                 w.health -= 1;
                 break;
-            }
-        }
-        if(p.active && CheckCollision(player.pos, Player::RADIUS, p.lineStart, p.lineEnd)){
+            }        
+        }        
+        if(p.active && CheckCollisionRecs(player.hitbox(), beamHull)){
             p.active = false;
             player.lives -= 1;
         }
@@ -154,25 +162,33 @@ void Gameplay::updatePlayerProjectiles() noexcept{
     }
 }
 
-void Gameplay::maybeAliensFire() noexcept{
-    if(enemyShotDelay-- || aliens.empty()){
+void Gameplay::maybePlayerShoots() noexcept{
+    if(!IsKeyPressed(KEY_SPACE)){
         return;
     }
-    enemyShotDelay = ALIEN_SHOT_COOLDOWN;         
-    alienProjectiles.emplace_back(random(aliens).gunPosition());    
-}   
-
-void Gameplay::render() const noexcept{    
-    background.Render();
-    player.Render();
-    render_all<Projectile>(alienProjectiles, resources.laserTexture);
-    render_all<Projectile>(playerProjectiles, resources.laserTexture);
-    render_all<Wall>(walls, resources.barrierTexture);
-    render_all<Alien>(aliens, resources.alienTexture);
-    DrawText(TextFormat("Score: %i", score), 50, 20, 40, YELLOW);
-    DrawText(TextFormat("Lives: %i", player.lives), 50, 70, 40, YELLOW);
+    try{
+        playerProjectiles.emplace_back(player.gunPosition(), -Projectile::SPEED);
+    } catch(...){/*swallowing the exception. The game can keep running without this projectile*/}
 }
 
+
+
+void Gameplay::maybeAliensShoots() noexcept{
+    if(alienShotCooldown-- || aliens.empty()){
+        return;
+    }
+    alienShotCooldown = ALIEN_SHOT_COOLDOWN;
+    try{
+        alienProjectiles.emplace_back(random(aliens).gunPosition());
+    } catch(...){/*swallowing the exception. The game can keep running without this projectile*/}
+}
+
+void Gameplay::eraseDeadEntities() noexcept{
+    std::erase_if(playerProjectiles, is_dead<Projectile>);
+    std::erase_if(alienProjectiles, is_dead<Projectile>);
+    std::erase_if(aliens, is_dead<Alien>);
+    std::erase_if(walls, is_dead<Wall>);
+}
 //void exit() noexcept override{
 //     //TODO: save score, update scoreboard
 //    //newHighScore = CheckNewHighScore();

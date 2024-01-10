@@ -12,11 +12,12 @@ using namespace std::literals::string_view_literals;
 static constexpr unsigned STAR_COUNT = 600;
 static constexpr unsigned WALL_COUNT = 5;
 static constexpr unsigned WALL_DIST_FROM_BOTTOM = 250;
-static constexpr int formationWidth = 2;
-static constexpr int formationHeight = 2;
-static constexpr int alienSpacing = 80;
-static constexpr int formationX = 100;
-static constexpr int formationY = 50;
+static constexpr unsigned short ALIEN_COLUMNS = 2;
+static constexpr unsigned short ALIEN_ROWS = 2;
+static constexpr size_t ALIEN_COUNT = ALIEN_COLUMNS * ALIEN_ROWS;
+static constexpr unsigned ALIEN_SPACING = 80;
+static constexpr unsigned ALIEN_FORMATION_LEFT = 550;
+static constexpr unsigned ALIEN_FORMATION_TOP = 50;
 static constexpr int ALIEN_SHOT_COOLDOWN = 60; //frames
 static constexpr std::array PlayerAnimationFiles = {
     "./Assets/Ship1.png"sv,
@@ -24,9 +25,9 @@ static constexpr std::array PlayerAnimationFiles = {
     "./Assets/Ship3.png"sv
 };
 
-
 //TODO: utilities, move to separate header. 
-static float toFloat(int value) noexcept{
+template <std::integral T>
+static float toFloat(T value) noexcept{
     return static_cast<float>(value);
 }
 
@@ -65,19 +66,30 @@ static void DrawText(std::string_view t, Vector2 pos, int fontsize, Color c) noe
     DrawText(t.data(), floor<int>(pos.x), floor<int>(pos.y), fontsize, c);
 }
 
+//assumes textures are drawn from their center
+static Rectangle MakeCollisionHull(const Texture2D& tex, Vector2 pos) noexcept{        
+    const auto width = toFloat(tex.width);
+    const auto height = toFloat(tex.height);    
+    const auto left = pos.x - (width * 0.5f);
+    const auto top = pos.y - (height * 0.5f);
+    return Rectangle{left, top, width, height};
+}
+
+struct LoadTextureError : public std::runtime_error{
+    explicit LoadTextureError(std::string_view msg) : std::runtime_error(msg.data()){}
+};
+
 class OwnTexture{
     Texture2D _tex;
 public:
     explicit OwnTexture(std::string_view path){
         _tex = LoadTexture(path.data());
         if(_tex.id <= 0){
-            throw(std::runtime_error(std::format("Unable to load texture: {}"sv, path)));
+            throw(LoadTextureError(std::format("Unable to load texture: {}"sv, path)));
         }
     }
-
     OwnTexture(const OwnTexture& other) = delete;
     OwnTexture& operator=(const OwnTexture& other) = delete;
-
     OwnTexture(OwnTexture&& other) noexcept{
         std::swap(other._tex, _tex);
     };
@@ -93,10 +105,17 @@ public:
     const Texture2D& get() const noexcept{
         return _tex;
     }
+
+    float width() const noexcept{
+        return static_cast<float>(_tex.width);
+    }
+    float height() const noexcept{
+        return static_cast<float>(_tex.height);
+    }
 };
 
 struct Resources{    
-    OwnTexture alienTexture = OwnTexture("./Assets/Alien.png"sv);
+    OwnTexture alienTexture = OwnTexture{"./Assets/Alien.png"sv};
     OwnTexture barrierTexture = OwnTexture("./Assets/Barrier.png"sv);
     OwnTexture laserTexture = OwnTexture("./Assets/Laser.png"sv);    
 };

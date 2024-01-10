@@ -5,11 +5,9 @@
 #include <span>
 #include <vector>   
 
-
-
 struct Animation{
     std::vector<OwnTexture> frames;
-    size_t frame = 0;
+    size_t current = 0;
     unsigned displayTime = 15; //in ticks   
     unsigned tickCount = 0;
 
@@ -24,11 +22,11 @@ struct Animation{
         tickCount++;
         if(tickCount > displayTime){
             tickCount = 0;
-            frame = (frame + 1) % frames.size();
+            current = (current + 1) % frames.size();
         }
     }
     const Texture2D& currentFrame() const noexcept{
-        return frames[frame].get();
+        return frames[current].get();
     }
 };
 
@@ -48,15 +46,18 @@ struct Player{
     Vector2 gunPosition() const noexcept{
         return {x(), y() - RADIUS};
     }
+    Rectangle hitbox() const noexcept{
+        return {x() - RADIUS, y() - RADIUS, RADIUS * 2, RADIUS * 2};
+    }
 
     void Update() noexcept{
-        auto direction = IsKeyDown(KEY_LEFT) ? -1.0f : (IsKeyDown(KEY_RIGHT) ? 1.0f : 0.0f);
+        const auto direction = IsKeyDown(KEY_LEFT) ? -1.0f : (IsKeyDown(KEY_RIGHT) ? 1.0f : 0.0f);
         pos.x += SPEED * direction;
         pos.x = std::clamp(x(), RADIUS, GetScreenWidthF() - RADIUS);
         animation.update();
     }
 
     void Render() const noexcept{        
-        DrawTexture(animation.currentFrame(), x()-RADIUS, y()-RADIUS, WHITE);  
+        DrawTexture(animation.currentFrame(), x()-RADIUS, y()-RADIUS);  
     }
 };
