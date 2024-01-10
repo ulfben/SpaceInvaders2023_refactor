@@ -16,6 +16,7 @@ static constexpr int formationHeight = 2;
 static constexpr int alienSpacing = 80;
 static constexpr int formationX = 100;
 static constexpr int formationY = 50;
+static constexpr int ALIEN_SHOT_COOLDOWN = 60; //frames
 
 //TODO: utilities, move to separate header. 
 static float toFloat(int value) noexcept{

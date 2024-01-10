@@ -25,11 +25,11 @@ struct Gameplay : public State{
     Background background{STAR_COUNT};
     Player player{};
     int score = 0;
-    float shootTimer = 0;
+    int enemyShotDelay = 0;
     std::vector<Projectile> playerProjectiles;
     std::vector<Projectile> alienProjectiles;
-    std::vector<Wall> Walls;
-    std::vector<Alien> Aliens;
+    std::vector<Wall> walls;
+    std::vector<Alien> aliens;
     Gameplay();
     std::unique_ptr<State> update() noexcept override;
     void render() const noexcept override;
@@ -37,6 +37,7 @@ private:
     bool isGameOver() const noexcept;
     void updateAlienProjectiles() noexcept;
     void updatePlayerProjectiles() noexcept;
+    void maybeAliensFire() noexcept;
 };
 
 struct StartScreen : public State{

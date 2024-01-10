@@ -50,5 +50,8 @@
     <ClInclude Include="Source\State.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\RNG.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

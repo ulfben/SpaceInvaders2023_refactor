@@ -2,7 +2,6 @@
 #include "Resources.h"
 #include <algorithm> //for std::clamp
 struct Player{
-    EntityType type = EntityType::PLAYER;
     Vector2 pos{GetScreenWidth() / 2.0f, GetScreenHeight() - 70.f};
     float speed = 7;
     float radius = 50;

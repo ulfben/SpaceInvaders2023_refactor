@@ -1,11 +1,21 @@
 #include "raylib.h"
 #include "Resources.h"
 #include "State.h"
+#include <cassert>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <span>
 #include <vector>
+#include "RNG.h"
+
+template<typename Container>
+auto random(const Container& container) -> const typename Container::value_type& {
+    static RNG random(createSeeds());
+    const auto index = random.inRange(container.size());
+    return container[index];
+}
+
 static constexpr bool is_dead(const auto& p) noexcept{
     return !p.isAlive();
 };
@@ -67,12 +77,12 @@ void Spawn(std::vector<Alien>& Aliens){
 
 
 Gameplay::Gameplay(){
-    Spawn(Walls);
-    Spawn(Aliens);
+    Spawn(walls);
+    Spawn(aliens);
 }
 
 bool Gameplay::isGameOver() const noexcept{
-    return IsKeyReleased(KEY_Q) || (player.lives < 1) || Aliens.empty();
+    return IsKeyReleased(KEY_Q) || (player.lives < 1) || aliens.empty();
 }
 
 std::unique_ptr<State> Gameplay::update() noexcept{
@@ -81,7 +91,7 @@ std::unique_ptr<State> Gameplay::update() noexcept{
     }
     player.Update();
     background.Update(player.x() / GetScreenWidthF());
-    for(auto& a : Aliens){
+    for(auto& a : aliens){
         a.Update();
         if(a.y() > player.y()){
             return std::make_unique<EndScreen>();
@@ -94,23 +104,19 @@ std::unique_ptr<State> Gameplay::update() noexcept{
         playerProjectiles.emplace_back(player.gunPosition(), -Projectile::SPEED);
     }
 
-    shootTimer += 1;
-    if(shootTimer > 59 && !Aliens.empty()){
-        const int i = std::rand() % Aliens.size();        
-        alienProjectiles.emplace_back(Aliens[i].gunPosition());
-        shootTimer = 0;
-    }
+    maybeAliensFire();
+
     std::erase_if(playerProjectiles, is_dead<Projectile>);
     std::erase_if(alienProjectiles, is_dead<Projectile>);
-    std::erase_if(Aliens, is_dead<Alien>);
-    std::erase_if(Walls, is_dead<Wall>);
+    std::erase_if(aliens, is_dead<Alien>);
+    std::erase_if(walls, is_dead<Wall>);
     return nullptr;
 }
 
 void Gameplay::updateAlienProjectiles() noexcept{
     for(auto& p : alienProjectiles){
         p.Update();
-        for(auto& w : Walls){
+        for(auto& w : walls){
             if(CheckCollision(w.position, Wall::RADIUS, p.lineStart, p.lineEnd)){
                 p.active = false;
                 w.health -= 1;
@@ -127,7 +133,7 @@ void Gameplay::updateAlienProjectiles() noexcept{
 void Gameplay::updatePlayerProjectiles() noexcept{
     for(auto& p : playerProjectiles){
         p.Update();
-        for(auto& w : Walls){
+        for(auto& w : walls){
             if(CheckCollision(w.position, Wall::RADIUS, p.lineStart, p.lineEnd)){
                 p.active = false;
                 w.health -= 1;
@@ -137,7 +143,7 @@ void Gameplay::updatePlayerProjectiles() noexcept{
         if(!p.active){
             continue;
         }
-        for(auto& a : Aliens){
+        for(auto& a : aliens){
             if(CheckCollision(a.position, Alien::RADIUS, p.lineStart, p.lineEnd)){
                 p.active = false;
                 a.active = false;
@@ -148,14 +154,22 @@ void Gameplay::updatePlayerProjectiles() noexcept{
     }
 }
 
+void Gameplay::maybeAliensFire() noexcept{
+    if(enemyShotDelay-- || aliens.empty()){
+        return;
+    }
+    enemyShotDelay = ALIEN_SHOT_COOLDOWN;         
+    alienProjectiles.emplace_back(random(aliens).gunPosition());    
+}   
+
 void Gameplay::render() const noexcept{
     const auto i = player.activeTexture;
     background.Render();
     player.Render(resources.shipTextures[i].get());
     render_all<Projectile>(alienProjectiles, resources.laserTexture);
     render_all<Projectile>(playerProjectiles, resources.laserTexture);
-    render_all<Wall>(Walls, resources.barrierTexture);
-    render_all<Alien>(Aliens, resources.alienTexture);
+    render_all<Wall>(walls, resources.barrierTexture);
+    render_all<Alien>(aliens, resources.alienTexture);
     DrawText(TextFormat("Score: %i", score), 50, 20, 40, YELLOW);
     DrawText(TextFormat("Lives: %i", player.lives), 50, 70, 40, YELLOW);
 }
