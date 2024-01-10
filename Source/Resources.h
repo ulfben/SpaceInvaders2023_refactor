@@ -1,5 +1,6 @@
 #pragma once
 #include "raylib.h"
+#include <array>
 #include <vector>
 #include <string_view>
 #include <stdexcept>
@@ -17,6 +18,12 @@ static constexpr int alienSpacing = 80;
 static constexpr int formationX = 100;
 static constexpr int formationY = 50;
 static constexpr int ALIEN_SHOT_COOLDOWN = 60; //frames
+static constexpr std::array PlayerAnimationFiles = {
+    "./Assets/Ship1.png"sv,
+    "./Assets/Ship2.png"sv,
+    "./Assets/Ship3.png"sv
+};
+
 
 //TODO: utilities, move to separate header. 
 static float toFloat(int value) noexcept{
@@ -88,14 +95,7 @@ public:
     }
 };
 
-struct Resources{
-    std::vector<OwnTexture> shipTextures;
-    Resources(){
-        shipTextures.reserve(3);
-        shipTextures.emplace_back("./Assets/Ship1.png"sv);
-        shipTextures.emplace_back("./Assets/Ship2.png"sv);
-        shipTextures.emplace_back("./Assets/Ship3.png"sv);
-    }
+struct Resources{    
     OwnTexture alienTexture = OwnTexture("./Assets/Alien.png"sv);
     OwnTexture barrierTexture = OwnTexture("./Assets/Barrier.png"sv);
     OwnTexture laserTexture = OwnTexture("./Assets/Laser.png"sv);

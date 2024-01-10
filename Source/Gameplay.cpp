@@ -123,7 +123,7 @@ void Gameplay::updateAlienProjectiles() noexcept{
                 break;
             }
         }
-        if(p.active && CheckCollision(player.pos, player.radius, p.lineStart, p.lineEnd)){
+        if(p.active && CheckCollision(player.pos, Player::RADIUS, p.lineStart, p.lineEnd)){
             p.active = false;
             player.lives -= 1;
         }
@@ -162,10 +162,9 @@ void Gameplay::maybeAliensFire() noexcept{
     alienProjectiles.emplace_back(random(aliens).gunPosition());    
 }   
 
-void Gameplay::render() const noexcept{
-    const auto i = player.activeTexture;
+void Gameplay::render() const noexcept{    
     background.Render();
-    player.Render(resources.shipTextures[i].get());
+    player.Render();
     render_all<Projectile>(alienProjectiles, resources.laserTexture);
     render_all<Projectile>(playerProjectiles, resources.laserTexture);
     render_all<Wall>(walls, resources.barrierTexture);
