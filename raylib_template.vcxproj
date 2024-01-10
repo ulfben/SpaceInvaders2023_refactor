@@ -170,13 +170,14 @@
   <ItemGroup>
     <ClInclude Include="Source\Alien.h" />
     <ClInclude Include="Source\Background.h" />
-    <ClInclude Include="Source\game.h" />
+    <ClInclude Include="Source\Game.h" />
     <ClInclude Include="Source\Player.h" />
     <ClInclude Include="Source\Projectile.h" />
     <ClInclude Include="Source\Resources.h" />
     <ClInclude Include="Source\RNG.h" />
     <ClInclude Include="Source\State.h" />
     <ClInclude Include="Source\Wall.h" />
+    <ClInclude Include="Source\Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

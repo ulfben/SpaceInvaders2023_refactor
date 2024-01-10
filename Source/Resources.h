@@ -53,17 +53,17 @@ static float GetRandomValueF(T min, T max) noexcept{
     return toFloat(GetRandomValue(static_cast<int>(min), static_cast<int>(max)));
 }
 
-
-static void DrawText(std::string_view t, Vector2 pos, int fontsize, const Color& c) noexcept{
-    DrawText(t.data(), floor<int>(pos.x), floor<int>(pos.y), fontsize, c);
+static void DrawTexture(const Texture2D& tex, float x, float y, Color tint = WHITE) noexcept{
+    DrawTexture(tex, floor<int>(x), floor<int>(y), tint); 
 }
 
-enum struct EntityType{ //TODO: temporary re-location. Will delete.
-    PLAYER,
-    ENEMY,
-    PLAYER_PROJECTILE,
-    ENEMY_PROJECTILE
-};
+static void DrawTexture(const Texture2D& tex, Vector2 pos, Color tint = WHITE) noexcept{
+    DrawTexture(tex, pos.x, pos.y, tint); 
+}
+
+static void DrawText(std::string_view t, Vector2 pos, int fontsize, Color c) noexcept{
+    DrawText(t.data(), floor<int>(pos.x), floor<int>(pos.y), fontsize, c);
+}
 
 class OwnTexture{
     Texture2D _tex;
@@ -98,5 +98,5 @@ public:
 struct Resources{    
     OwnTexture alienTexture = OwnTexture("./Assets/Alien.png"sv);
     OwnTexture barrierTexture = OwnTexture("./Assets/Barrier.png"sv);
-    OwnTexture laserTexture = OwnTexture("./Assets/Laser.png"sv);
+    OwnTexture laserTexture = OwnTexture("./Assets/Laser.png"sv);    
 };

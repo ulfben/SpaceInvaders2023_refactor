@@ -36,7 +36,7 @@ struct Player{
     static constexpr float SPEED = 7;
     static constexpr float RADIUS = 50;
     Animation animation{PlayerAnimationFiles};
-    Vector2 pos{GetScreenWidth() / 2.0f, GetScreenHeight() - 70.f};
+    Vector2 pos{GetScreenWidthF() / 2.0f, GetScreenHeightF() - RADIUS};
     int lives = 3;     
 
     float x() const noexcept{
@@ -57,10 +57,6 @@ struct Player{
     }
 
     void Render() const noexcept{        
-        DrawTexturePro(animation.currentFrame(),
-            {0,0,352,352,}, {pos.x, pos.y,100,100,},
-            {50, 50}, 0, WHITE
-        );
+        DrawTexture(animation.currentFrame(), x()-RADIUS, y()-RADIUS, WHITE);  
     }
-
 };

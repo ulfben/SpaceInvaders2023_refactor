@@ -11,7 +11,7 @@
 
 template<typename Container>
 auto random(const Container& container) -> const typename Container::value_type& {
-    static RNG random(createSeeds());
+    static RNG random(createSeeds()); //Note: I absolutely should have used raylibs' GetRandomValue, but I needed to test my own RNG so... 
     const auto index = random.inRange(container.size());
     return container[index];
 }

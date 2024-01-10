@@ -4,19 +4,23 @@
 #include <vector>
 #include <span>
 #include <algorithm>
-struct Draw{
-    Draw() noexcept{
+struct DrawGuard{
+    DrawGuard() noexcept{
         BeginDrawing();
         ClearBackground(BLACK);
     }
-    ~Draw() noexcept{
+    ~DrawGuard() noexcept{
         EndDrawing();
     }
+    DrawGuard(const DrawGuard&) = delete;
+    DrawGuard& operator=(const DrawGuard&) = delete;
+    DrawGuard(DrawGuard&&) = delete;
+    DrawGuard& operator=(DrawGuard&&) = delete;
 };
 
 
 void Game::run(){
-    while(!WindowShouldClose()){
+    while(!w.shouldClose()){
         Update();
         Render();
     }
@@ -24,21 +28,19 @@ void Game::run(){
 
 void Game::Update() noexcept{
     auto next = state->update();
-    if(next){              
+    if(next){
         state.reset(next.release());
     }
 }
 
 void Game::Render() const noexcept{
-    Draw d{};
+    DrawGuard d{};
     state->render();
 }
 
-
-
 bool Game::CheckNewHighScore(){ //TODO: remove 
     return false;
-    //return (score > Leaderboard[4].score);
+    //return (score > Leaderboard.back().score);
 }
 
 void Game::InsertNewHighScore(const std::string& name){
