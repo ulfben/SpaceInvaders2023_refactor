@@ -70,6 +70,7 @@ private:
     void doTextEntry() noexcept;
     void sortTable() noexcept;
     void drawTable() const noexcept;
+    void drawTextBox() const noexcept;
     struct ScoreEntry{
         std::string name;
         int score = 0;

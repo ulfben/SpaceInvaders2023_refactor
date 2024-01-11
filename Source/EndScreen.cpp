@@ -36,7 +36,7 @@ bool EndScreen::isEntryComplete() const noexcept{
 void EndScreen::sortTable() noexcept{
     std::ranges::sort(highscores, [](const auto& a, const auto& b){
         return a.score > b.score;
-    });
+        });
 }
 void EndScreen::addNewScore(){
     highscores.push_back(current);
@@ -54,24 +54,21 @@ std::unique_ptr<State> EndScreen::update() noexcept{
     doTextEntry();
     if(isNewHighscore() && isEntryComplete() && IsKeyReleased(KEY_ENTER)){
         addNewScore(); //TODO: fix noexcept specification
-        saveScores(scoreFile);       
+        saveScores(scoreFile);
     }
     return nullptr;
 }
 
 void EndScreen::render() const noexcept{
     drawTable();
-    if(!isNewHighscore()){
-        DrawText("PRESS ENTER TO CONTINUE", 600, 200, 40, YELLOW);
-    } else{
-        DrawText("NEW HIGHSCORE!", 600, 300, 60, YELLOW);
+    const bool newHighscore = isNewHighscore();
+    DrawText(newHighscore ? "NEW HIGHSCORE!" : "PRESS ENTER TO CONTINUE",
+        600, newHighscore ? 300 : 200, newHighscore ? 60 : 40, YELLOW);
+
+    if(newHighscore){
         DrawText("PLACE MOUSE OVER INPUT BOX!", 600, 400, 20, YELLOW);
-        DrawRectangleRec(textBox, LIGHTGRAY);
-        const auto x = toInt<int>(textBox.x);
-        const auto y = toInt<int>(textBox.y);
-        const auto color = mouseOnTextfield() ? RED : DARKGRAY;
-        DrawRectangleLines(x, y, toInt<int>(textBox.width), toInt<int>(textBox.height), color);
-        DrawText(current.name.c_str(), x + 5, y + 8, 40, MAROON);
+        drawTextBox();
+        DrawText(current.name.c_str(), textBox.x + 5, textBox.y + 8, 40, MAROON);
         if(isEntryComplete()){
             DrawText("PRESS ENTER TO CONTINUE", 600, 800, 40, YELLOW);
         }
@@ -82,11 +79,17 @@ void EndScreen::drawTable() const noexcept{
     DrawText("LEADERBOARD", 50, 100, 40, YELLOW);
     int yOffset = 140;
     constexpr int yOffsetStep = 40;
-    for (const auto& line : highscores) {
+    for(const auto& line : highscores){
         DrawText(line.name.c_str(), 50, yOffset, 40, YELLOW);
         DrawText(TextFormat("%i", line.score), 350, yOffset, 40, YELLOW);
         yOffset += yOffsetStep;
     }
+}
+
+void EndScreen::drawTextBox() const noexcept{
+    DrawRectangleRec(textBox, LIGHTGRAY);    
+    const auto color = mouseOnTextfield() ? RED : DARKGRAY;
+    DrawRectangleLinesEx(textBox, 1, color);
 }
 
 void EndScreen::loadScores(std::string_view path){
