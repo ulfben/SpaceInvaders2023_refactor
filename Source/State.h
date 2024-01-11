@@ -69,12 +69,12 @@ private:
     bool isEntryComplete() const noexcept;
     void doTextEntry() noexcept;
     void sortTable() noexcept;
+    void drawTable() const noexcept;
     struct ScoreEntry{
         std::string name;
         int score = 0;
     };
     ScoreEntry current;
-    std::vector<ScoreEntry> highscores = {{"AAA"s, 0}, {"BBB"s, 0}, {"CCC"s, 0}, {"DDD"s, 0}, {"EEE"s, 0}};
-    std::string name;    
+    std::vector<ScoreEntry> highscores; 
     Rectangle textBox = {600, 500, 225, 50};    
 };
