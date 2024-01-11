@@ -8,11 +8,7 @@
 #include "Wall.h"
 #include "Alien.h"
 #include "Background.h"
-
-struct PlayerData{
-    std::string name;
-    int score;
-};
+using namespace std::string_literals;
 
 struct State{
     virtual std::unique_ptr<State> update() noexcept = 0;
@@ -58,65 +54,27 @@ struct StartScreen : public State{
     }
 };
 
-struct EndScreen : public State{
-    std::vector<PlayerData> Leaderboard = {{"Player 1", 500}, {"Player 2", 400}, {"Player 3", 300}, {"Player 4", 200}, {"Player 5", 100}};
-    std::string name;
-    Rectangle textBox = {600, 500, 225, 50};
-    bool newHighScore = false;
+struct EndScreen : public State{    
+    explicit EndScreen(int score);    
+    std::unique_ptr<State> update() noexcept override;
+    void render() const noexcept override;
 
-    bool mouseOnText() const noexcept{
-        return CheckCollisionPointRec(GetMousePosition(), textBox);
-    }
-
-    std::unique_ptr<State> update() noexcept override{
-        if(IsKeyReleased(KEY_ENTER) && !newHighScore){
-            //TODO: save leaderboard
-            return std::make_unique<StartScreen>();
-        }
-    /*    if(!newHighScore){
-            return nullptr;
-        }*/
-        if(mouseOnText()){
-            SetMouseCursor(MOUSE_CURSOR_IBEAM);
-            for(int key = GetCharPressed(); key > 0; key = GetCharPressed()){
-                if(key > 31 && key < 126 && name.size() < 3){
-                    name.push_back(static_cast<char>(key));
-                }
-            }
-            if(IsKeyPressed(KEY_BACKSPACE) && !name.empty()){
-                name.pop_back();
-            }
-        } else{
-            SetMouseCursor(MOUSE_CURSOR_DEFAULT);
-        }
-        if(!name.empty() && IsKeyReleased(KEY_ENTER)){
-            //InsertNewHighScore(nameEntry);
-            newHighScore = false;
-        }
-
-        return nullptr;
-    }
-
-    void render() const noexcept override{
-        /*if(!newHighScore){
-            DrawText("PRESS ENTER TO CONTINUE", 600, 200, 40, YELLOW);
-            DrawText("LEADERBOARD", 50, 100, 40, YELLOW);
-            for(int i = 0; i < Leaderboard.size(); i++){
-                DrawText(Leaderboard[i].name.c_str(), 50, 140 + (i * 40), 40, YELLOW);
-                DrawText(TextFormat("%i", Leaderboard[i].score), 350, 140 + (i * 40), 40, YELLOW);
-            }
-            return;
-        }*/
-        DrawText("NEW HIGHSCORE!", 600, 300, 60, YELLOW);
-        DrawText("PLACE MOUSE OVER INPUT BOX!", 600, 400, 20, YELLOW);
-        DrawRectangleRec(textBox, LIGHTGRAY);
-        const auto x = toInt<int>(textBox.x);
-        const auto y = toInt<int>(textBox.y);
-        const auto color = mouseOnText() ? RED : DARKGRAY;
-        DrawRectangleLines(x, y, toInt<int>(textBox.width), toInt<int>(textBox.height), color);
-        DrawText(name.c_str(), x + 5, y + 8, 40, MAROON);       
-        if(!name.empty()){
-            DrawText("PRESS ENTER TO CONTINUE", 600, 800, 40, YELLOW);
-        }
-    }
+private: 
+    static const size_t MAX_INPUT_SIZE = 3;
+    void loadScores(std::string_view path);
+    void addNewScore();
+    void saveScores(std::string_view path) noexcept;   
+    bool mouseOnTextfield() const noexcept;
+    bool isNewHighscore() const noexcept;
+    bool isEntryComplete() const noexcept;
+    void doTextEntry() noexcept;
+    void sortTable() noexcept;
+    struct ScoreEntry{
+        std::string name;
+        int score = 0;
+    };
+    ScoreEntry current;
+    std::vector<ScoreEntry> highscores = {{"AAA"s, 0}, {"BBB"s, 0}, {"CCC"s, 0}, {"DDD"s, 0}, {"EEE"s, 0}};
+    std::string name;    
+    Rectangle textBox = {600, 500, 225, 50};    
 };

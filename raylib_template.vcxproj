@@ -164,6 +164,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\EndScreen.cpp" />
     <ClCompile Include="Source\game.cpp" />
     <ClCompile Include="Source\Gameplay.cpp" />
     <ClCompile Include="Source\main.cpp" />

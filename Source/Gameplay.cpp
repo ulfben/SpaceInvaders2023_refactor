@@ -80,7 +80,7 @@ std::unique_ptr<State> Gameplay::update() noexcept{
     maybePlayerShoots();
     maybeAliensShoots();
     eraseDeadEntities();
-    return isGameOver() ? std::make_unique<EndScreen>() : nullptr;
+    return isGameOver() ? std::make_unique<EndScreen>(score) : nullptr;
 }
 
 void Gameplay::render() const noexcept{

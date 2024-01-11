@@ -13,14 +13,15 @@ static constexpr unsigned STAR_COUNT = 600;
 static constexpr unsigned WALL_COUNT = 5;
 static constexpr unsigned WALL_DIST_FROM_BOTTOM = 250;
 static constexpr unsigned WALL_MARGIN = 125; //distance to edge of screen
-static constexpr unsigned short ALIEN_COLUMNS = 2;
-static constexpr unsigned short ALIEN_ROWS = 2;
+static constexpr unsigned short ALIEN_COLUMNS = 1;
+static constexpr unsigned short ALIEN_ROWS = 1;
 static constexpr size_t ALIEN_COUNT = ALIEN_COLUMNS * ALIEN_ROWS;
 static constexpr unsigned ALIEN_SPACING = 100;
 static constexpr unsigned ALIEN_FORMATION_TOP = 50;
 static constexpr int ALIEN_SHOT_COOLDOWN = 60; //frames
 static constexpr int POINTS_PER_ALIEN = 100;
-
+static constexpr size_t MAX_HIGHSCORE_ENTRIES = 5;
+static constexpr std::string_view scoreFile = "./Assets/HighScores.txt"sv;
 static constexpr std::array PlayerAnimationFiles = {
     "./Assets/Ship1.png"sv,
     "./Assets/Ship2.png"sv,
@@ -28,6 +29,20 @@ static constexpr std::array PlayerAnimationFiles = {
 };
 
 //TODO: utilities, move to separate header. 
+
+//write a narrowing cast function
+template <typename T, typename U>
+static T narrow_cast(U&& u) noexcept{
+    return static_cast<T>(std::forward<U>(u));
+}
+
+static char toChar(int i) noexcept{
+    if(i < std::numeric_limits<char>::min() || i > std::numeric_limits<char>::max()){        
+       return '\0';
+    }
+    return narrow_cast<char>(i);
+}
+
 template <std::integral T>
 static float toFloat(T value) noexcept{
     return static_cast<float>(value);
