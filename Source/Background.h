@@ -1,5 +1,8 @@
-#include "Resources.h"
+#pragma once
+#include "raylib.h"
+#include "UtilsRaylib.h"
 #include <vector>
+
 class Star{
     static constexpr auto COLOR = GRAY;        
     float _x = 0; 

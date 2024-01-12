@@ -165,19 +165,27 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\EndScreen.cpp" />
-    <ClCompile Include="Source\game.cpp" />
-    <ClCompile Include="Source\Gameplay.cpp" />
+    <ClCompile Include="Source\Game.cpp" />
+    <ClCompile Include="Source\GameScreen.cpp" />
     <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\StartScreen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Alien.h" />
+    <ClInclude Include="Source\Assets.h" />
+    <ClInclude Include="Source\AutoTexture.h" />
     <ClInclude Include="Source\Background.h" />
+    <ClInclude Include="Source\DrawGuard.h" />
+    <ClInclude Include="Source\EndScreen.h" />
     <ClInclude Include="Source\Game.h" />
+    <ClInclude Include="Source\GameScreen.h" />
     <ClInclude Include="Source\Player.h" />
     <ClInclude Include="Source\Projectile.h" />
-    <ClInclude Include="Source\Resources.h" />
     <ClInclude Include="Source\RNG.h" />
+    <ClInclude Include="Source\Settings.h" />
+    <ClInclude Include="Source\StartScreen.h" />
     <ClInclude Include="Source\State.h" />
+    <ClInclude Include="Source\UtilsRaylib.h" />
     <ClInclude Include="Source\Wall.h" />
     <ClInclude Include="Source\Window.h" />
   </ItemGroup>

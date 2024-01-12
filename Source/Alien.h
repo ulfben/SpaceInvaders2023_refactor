@@ -1,4 +1,6 @@
-#include "Resources.h"
+#pragma once
+#include "raylib.h"
+#include "UtilsRaylib.h"
 
 struct Alien{            
     static constexpr int WIDTH = 94; //TODO: these should be read from the sprite... 

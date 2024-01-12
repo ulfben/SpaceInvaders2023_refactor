@@ -1,4 +1,6 @@
-#include "Resources.h"
+#pragma once
+#include "raylib.h"
+#include "UtilsRaylib.h"
 
 struct Wall{
     static constexpr int WIDTH = 164; //TODO: these should be read from the sprite... 

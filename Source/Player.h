@@ -1,19 +1,22 @@
 #pragma once
-#include "Resources.h"
+#include "Settings.h"
+#include "AutoTexture.h"
+#include "raylib.h"
+#include "UtilsRaylib.h"
 #include <algorithm> //for std::clamp
-#include <string_view>
 #include <span>
+#include <string_view>
 #include <vector>   
 
 struct Animation{
-    std::vector<OwnTexture> frames;
+    std::vector<AutoTexture> frames;
     size_t current = 0;
     unsigned displayTime = 15; //in ticks   
     unsigned tickCount = 0;
 
     explicit Animation(std::span<const std::string_view> paths){
         frames.reserve(paths.size());
-        for(auto path : paths){
+        for(auto path : paths){ //by copy, string_view is a cheap value type
             frames.emplace_back(path);
         }
     }

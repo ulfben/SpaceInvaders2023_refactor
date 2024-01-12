@@ -1,5 +1,5 @@
-ULf,100
-tes,100
-ddd,100
-344,100
-Tes,100
+AAA,0
+BBB,0
+CCC,0
+DDD,0
+EEE,0
