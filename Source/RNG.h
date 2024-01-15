@@ -1,14 +1,14 @@
 #pragma once
-#include <array>
 #include <algorithm>
+#include <array>
 #include <cassert>
+#include <chrono> //for entropy in createSeeds
 #include <concepts>
+#include <ctime> //for entropy in createSeeds
 #include <limits>
 #include <span>
-#include <type_traits>
-#include <chrono> //for entropy in createSeeds
-#include <ctime> //for entropy in createSeeds
 #include <thread> //for entropy in createSeeds
+#include <type_traits>
 // The "xoshiro256** 1.0" generator.
 // public interface, rejection sampling and seeding utilities by Ulf Benjaminsson (2023)
 // https://ulfbenjaminsson.com/
@@ -31,7 +31,7 @@ public:
     // rejection sampling to ensure uniformity.
 
     constexpr explicit RNG(u64 seed) noexcept{
-        [[gsl::suppress(bounds.4, justification: "RNG owns the state array and guarantuees that the index is valid.")]]
+        [[gsl::suppress(bounds.4)]]
         s[0] = splitmix64(seed);
         seed += 0x9E3779B97F4A7C15uLL;
         s[1] = splitmix64(seed);
@@ -109,7 +109,7 @@ private:
     std::array<u64, SEED_COUNT> s{};
 
     constexpr u64 nextU64() noexcept{
-        [[gsl::suppress(bounds.4, justification: "RNG owns the state array and guarantuees that the indexing is valid.")]]
+        [[gsl::suppress(bounds.4)]]
         const u64 result = rotl(s[1] * 5, 7) * 9;
         const u64 t = s[1] << 17;
         s[2] ^= s[0];

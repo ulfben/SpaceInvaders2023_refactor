@@ -28,8 +28,6 @@
 #endif // _MSC_VER
 #endif // __clang__
 
-
-
 /*A few utility functions, followed by some useful overloads for Raylib functions*/
 
 template <typename T, typename U>
@@ -59,11 +57,11 @@ inline T floor(float value) noexcept{
 }
 
 inline float GetScreenWidthF() noexcept{
-    return static_cast<float>(GetScreenWidth());
+    return toFloat(GetScreenWidth());
 }
 
 inline float GetScreenHeightF() noexcept{
-    return static_cast<float>(GetScreenHeight());
+    return toFloat(GetScreenHeight());
 }
 
 template <typename T>

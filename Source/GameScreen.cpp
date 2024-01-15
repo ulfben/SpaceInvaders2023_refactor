@@ -19,7 +19,7 @@ template<typename Container>
 static const auto& random(const Container& container) noexcept{    
     static RNG random(createSeeds()); //Note: I absolutely should have used raylibs' GetRandomValue, but I needed to test my own RNG so... 
     const auto index = random.inRange(container.size());
-    [[gsl::suppress(bounds.4, justification: "index is guarantueed to be valid.")]]
+    [[gsl::suppress(bounds.4)]]
     return container[index];
 }
 

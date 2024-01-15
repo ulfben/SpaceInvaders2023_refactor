@@ -29,7 +29,7 @@ struct Animation{
         }
     }
     const Texture2D& currentFrame() const noexcept{
-        [[gsl::suppress(bounds.4, justification: "Animation owns and guarantuees that the index is valid.")]]
+        [[gsl::suppress(bounds.4)]]
         return frames[current].get();
     }
     float width() const noexcept{
