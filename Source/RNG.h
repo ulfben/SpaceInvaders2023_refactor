@@ -176,18 +176,17 @@ private:
 };
 
 //Some strategies for seeding the full 256-bit state of xoshiro256.
-// createSeeds uses date, time-since-launch, CPU time, thread ID, and a memory address as sources of entropy.
+// createSeeds uses time-since-the-epoch, CPU time, thread ID, and a memory address as sources of entropy.
 // each value is hashed using splitmix64. 
 static typename RNG::State createSeeds() noexcept{
-    using u64 = RNG::u64;
-    using namespace std::chrono;
-    const auto current_date = static_cast<u64>(system_clock::now().time_since_epoch().count());
-    const auto uptime = static_cast<u64>(high_resolution_clock::now().time_since_epoch().count());
-    const auto cpu_time = static_cast<u64>(std::clock());    
-    const auto mixed_time = static_cast<u64>((uptime << 1) ^ current_date);
-    const auto thread_id = static_cast<u64>(std::hash<std::thread::id>{}(std::this_thread::get_id()));    
-    const int local{};
-    const auto local_addr = static_cast<u64>(reinterpret_cast<std::uintptr_t>(&local));
+    using u64 = RNG::u64;    
+    const auto hash = std::hash<u64>{};
+    const auto date = hash(std::chrono::system_clock::now().time_since_epoch().count());    
+    const auto cpu_time = hash(std::clock());    
+    const auto uptime = hash(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+    const auto mixed_time = hash((uptime << 1) ^ date);
+    const auto thread_id = std::hash<std::thread::id>{}(std::this_thread::get_id());    
+    const auto local_addr = hash(reinterpret_cast<std::uintptr_t>(&hash));
     return {
         RNG::splitmix64_hash(mixed_time),
         RNG::splitmix64_hash(thread_id),
@@ -196,15 +195,15 @@ static typename RNG::State createSeeds() noexcept{
     };
 }
 
-/* createSeedsB *additionally* mix those sources with entropy from std::random_device. This is likely significantly slow(er).
+/* createSeedsB *additionally* mix those sources with entropy from std::random_device
 #include <random>
 static typename RNG::State createSeedsB() {
     using u64 = RNG::u64;
-    std::random_device rd;
+    std::random_device rd;    
     auto seeds = createSeeds();
-    seeds[0] = static_cast<u64>(rd()) ^ seeds[0];
-    seeds[1] = static_cast<u64>(rd()) ^ (seeds[0] << 1);
-    seeds[2] = static_cast<u64>(rd()) ^ (seeds[1] << 1);
-    seeds[3] = static_cast<u64>(rd()) ^ (seeds[2] << 1);
+    seeds[0] = RNG::splitmix64_hash(rd() ^ seeds[0]);
+    seeds[1] = RNG::splitmix64_hash(rd() ^ (seeds[0] << 1));
+    seeds[2] = RNG::splitmix64_hash(rd() ^ (seeds[1] << 1));
+    seeds[3] = RNG::splitmix64_hash(rd() ^ (seeds[2] << 1));
     return seeds;
 }*/
