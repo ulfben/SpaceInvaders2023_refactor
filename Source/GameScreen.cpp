@@ -5,6 +5,7 @@
 #include "Projectile.h"
 #include "raylib.h"
 #include "RNG.h"
+#include "Seeding.h"
 #include "Settings.h"
 #include "State.h"
 #include "UtilsRaylib.h"

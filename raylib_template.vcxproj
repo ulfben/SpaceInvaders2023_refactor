@@ -182,6 +182,7 @@
     <ClInclude Include="Source\Player.h" />
     <ClInclude Include="Source\Projectile.h" />
     <ClInclude Include="Source\RNG.h" />
+    <ClInclude Include="Source\Seeding.h" />
     <ClInclude Include="Source\Settings.h" />
     <ClInclude Include="Source\StartScreen.h" />
     <ClInclude Include="Source\State.h" />

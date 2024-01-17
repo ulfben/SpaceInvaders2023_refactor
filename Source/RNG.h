@@ -1,23 +1,23 @@
 #pragma once
 #include <array>
-#include <cassert>
 #include <bitset>
-#include <chrono> //for entropy in createSeeds
+#include <cassert>
 #include <concepts>
 #include <cstdint>
 #include <limits>
 #include <span>
-#include <thread> //for entropy in createSeeds
-#include <ctime> //for entropy in createSeeds
 #include <type_traits>
 
 // The "xoshiro256** 1.0" generator.
-// public interface, rejection sampling and seeding utilities by Ulf Benjaminsson (2023)
+// Public interface, rejection sampling and seeding utilities (see; Seeding.h) 
+// by Ulf Benjaminsson (2023)
 // https://ulfbenjaminsson.com/
 // Based on C++ port by Arthur O'Dwyer (2021).
 // https://quuxplusone.github.io/blog/2021/11/23/xoshiro/
 // of the C version by David Blackman and Sebastiano Vigna (2018),
 // https://prng.di.unimi.it/xoshiro256starstar.c
+// splitmix64 by Sebastiano Vigna (2015) 
+// https://prng.di.unimi.it/splitmix64.c
 
 class RNG{
 public:
@@ -26,8 +26,8 @@ public:
     using State = std::array<u64, SEED_COUNT>;
     using Span = std::span<const u64, SEED_COUNT>;
     static constexpr auto USE_REJECTION_SAMPLING = false;
-    // When enabled, all ranged functions will use rejection sampling to ensure a more uniform 
-    // distribution of random numbers across large ranges. The concern with large ranges is that
+    // When enabled, all ranged integer functions will use rejection sampling to ensure a more uniform 
+    // distribution of random numbers across large integer ranges. The concern with large ranges is that
     // methods like modulo reduction (randNum % range) might not evenly distribute numbers 
     // across the range, leading to bias. As a rule of thumb, if the range is more than half of 
     // the maximum output (e.g., more than 2^63), you might start to see the benefits of using 
@@ -35,15 +35,10 @@ public:
 
     constexpr explicit RNG(u64 seed) noexcept{
         s[0] = splitmix64(seed);
-        seed += 0x9E3779B97F4A7C15uLL;
-        s[1] = splitmix64(seed);
-        seed += 0x7F4A7C15uLL;
-        s[2] = splitmix64(seed);
-        seed += 0x9E3779B9uLL;
-        s[3] = splitmix64(seed);
+        s[1] = splitmix64(s[0] + 0x9E3779B97F4A7C15uLL);
+        s[2] = splitmix64(s[1] + 0x7F4A7C15uLL);  
+        s[3] = splitmix64(s[2] + 0x9E3779B9uLL);
     }
-    constexpr explicit RNG(double seed) noexcept
-        : RNG(static_cast<u64>(seed)){}
 
     constexpr explicit RNG(Span seeds) noexcept{
         std::ranges::copy(seeds, s.begin());
@@ -54,13 +49,22 @@ public:
     }
 
     constexpr u64 next() noexcept{
-        return nextU64();
+        const u64 result = rotl(s[1] * 5, 7) * 9;
+        const u64 t = s[1] << 17;
+        s[2] ^= s[0];
+        s[3] ^= s[1];
+        s[1] ^= s[2];
+        s[0] ^= s[3];
+        s[2] ^= t;
+        s[3] = rotl(s[3], 45);
+        return result;
     }
 
     constexpr bool coinToss() noexcept{
         return next() & 1; //checks the least significant bit
     }
 
+    //returns a random number in the range [0, 1)
     template<std::floating_point Real>
     constexpr Real normalized() noexcept{
         return static_cast<Real>(next()) / static_cast<Real>(max());
@@ -94,7 +98,7 @@ public:
 
     constexpr u64 inRange(u64 range) noexcept{
         if(range == 0){
-            assert(false && "RNG::inRange called with empty range!");
+            assert(false && "RNG::inRange(u64) called with empty range!");
             return 0;
         }
         if constexpr(USE_REJECTION_SAMPLING){
@@ -129,38 +133,22 @@ public:
         s = temp;
     }
 
-    //convenience function to allow hashing from const values.
-    static constexpr u64 splitmix64_hash(u64 x) noexcept{        
-        return splitmix64(x);
+    static constexpr u64 splitmix64(u64 x) noexcept{
+        u64 z = (x + 0x9e3779b97f4a7c15uLL);
+        z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9uLL;
+        z = (z ^ (z >> 27)) * 0x94d049bb133111ebuLL;
+        return z ^ (z >> 31);
     }
     
 private:
     State s{};
 
-    constexpr u64 nextU64() noexcept{
-        const u64 result = rotl(s[1] * 5, 7) * 9;
-        const u64 t = s[1] << 17;
-        s[2] ^= s[0];
-        s[3] ^= s[1];
-        s[1] ^= s[2];
-        s[0] ^= s[3];
-        s[2] ^= t;
-        s[3] = rotl(s[3], 45);
-        return result;
-    }
-
     static constexpr u64 rotl(u64 x, int k) noexcept{
         return (x << k) | (x >> (64 - k));
     }
 
-    static constexpr u64 splitmix64(u64& x) noexcept{
-        u64 z = (x += 0x9e3779b97f4a7c15uLL);
-        z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9uLL;
-        z = (z ^ (z >> 27)) * 0x94d049bb133111ebuLL;
-        return z ^ (z >> 31);
-    }
-
     //uses rejection sampling to ensure fair scaling. Costlier than inRange(u64)
+    //if you prefer to always use rejection sampling, set USE_REJECTION_SAMPLING to true.
     constexpr u64 uniformRandom(u64 range) noexcept{
         if(range == 0){
             assert(false && "RNG::uniformRandom called with empty range!");
@@ -174,36 +162,3 @@ private:
         return n % range;
     }
 };
-
-//Some strategies for seeding the full 256-bit state of xoshiro256.
-// createSeeds uses time-since-the-epoch, CPU time, thread ID, and a memory address as sources of entropy.
-// each value is hashed using splitmix64. 
-static typename RNG::State createSeeds() noexcept{
-    using u64 = RNG::u64;    
-    const auto hash = std::hash<u64>{};
-    const auto date = hash(std::chrono::system_clock::now().time_since_epoch().count());    
-    const auto cpu_time = hash(std::clock());    
-    const auto uptime = hash(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-    const auto mixed_time = hash((uptime << 1) ^ date);
-    const auto thread_id = std::hash<std::thread::id>{}(std::this_thread::get_id());    
-    const auto local_addr = hash(reinterpret_cast<std::uintptr_t>(&hash));
-    return {
-        RNG::splitmix64_hash(mixed_time),
-        RNG::splitmix64_hash(thread_id),
-        RNG::splitmix64_hash(cpu_time),
-        RNG::splitmix64_hash(local_addr),
-    };
-}
-
-/* createSeedsB *additionally* mix those sources with entropy from std::random_device
-#include <random>
-static typename RNG::State createSeedsB() {
-    using u64 = RNG::u64;
-    std::random_device rd;    
-    auto seeds = createSeeds();
-    seeds[0] = RNG::splitmix64_hash(rd() ^ seeds[0]);
-    seeds[1] = RNG::splitmix64_hash(rd() ^ (seeds[0] << 1));
-    seeds[2] = RNG::splitmix64_hash(rd() ^ (seeds[1] << 1));
-    seeds[3] = RNG::splitmix64_hash(rd() ^ (seeds[2] << 1));
-    return seeds;
-}*/
