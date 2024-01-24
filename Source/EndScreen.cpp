@@ -60,7 +60,7 @@ bool EndScreen::mouseOnTextfield() const noexcept{
 void EndScreen::handleTextEntry() noexcept{
     for(int key = GetCharPressed(); key > 0; key = GetCharPressed()){
         const char c = toChar(key);
-        if(c > 31 && c < 126 && !isEntryComplete()){
+        if(c > 31 && c < 127 && !isEntryComplete()){
             current.name.push_back(c);
         }
     }

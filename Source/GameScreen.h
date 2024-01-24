@@ -18,7 +18,7 @@ public:
     void render() const noexcept override;
 
 private:
-    //Note: the Player class owns its own assets, so it's not included here.
+    //Note: the Player class owns its own textures, so they are not included here.
     AutoTexture alien_gfx = AutoTexture{"./Assets/Alien.png"sv};
     AutoTexture wall_gfx = AutoTexture{"./Assets/Barrier.png"sv};
     AutoTexture beam_gfx = AutoTexture{"./Assets/Laser.png"sv};
