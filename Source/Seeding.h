@@ -1,16 +1,15 @@
 #pragma once
 #include "RNG.h"
-#include <chrono> //for entropy in createSeeds
-#include <ctime> //for entropy in createSeeds
-#include <random>
-#include <thread> //for entropy in createSeeds
+#include <chrono>
+#include <ctime>
+#include <thread>
+//#include <random> //only needed for createSeedsB, for std::random_device
 
 //Some strategies for seeding the full 256-bit state of xoshiro256.
 // createSeeds uses time-since-the-epoch, CPU time, thread ID, and a memory address as sources of entropy.
-// each value is hashed using splitmix64. 
+// each value is hashed and then further mixed using splitmix64. 
 static typename RNG::State createSeeds() noexcept{
-    using u64 = RNG::u64;    
-    const auto hash = std::hash<u64>{};
+    const auto hash = std::hash<RNG::u64>{};
     const auto date = hash(std::chrono::system_clock::now().time_since_epoch().count());    
     const auto cpu_time = hash(std::clock());    
     const auto uptime = hash(std::chrono::high_resolution_clock::now().time_since_epoch().count());
@@ -26,7 +25,7 @@ static typename RNG::State createSeeds() noexcept{
 }
 
 //createSeedsB *additionally* mix those sources with entropy from std::random_device
-static typename RNG::State createSeedsB() {
+/*static typename RNG::State createSeedsB() {
     std::random_device rd;    
     auto seeds = createSeeds();
     seeds[0] = RNG::splitmix64(rd() ^ seeds[0]);
@@ -34,4 +33,4 @@ static typename RNG::State createSeedsB() {
     seeds[2] = RNG::splitmix64(rd() ^ (seeds[1] << 1));
     seeds[3] = RNG::splitmix64(rd() ^ (seeds[2] << 1));
     return seeds;
-}
+}*/

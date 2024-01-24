@@ -59,9 +59,6 @@
     <ClInclude Include="Source\UtilsRaylib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Assets.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\DrawGuard.h">
       <Filter>Header Files</Filter>
     </ClInclude>

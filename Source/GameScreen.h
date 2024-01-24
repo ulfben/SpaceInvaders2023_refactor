@@ -1,6 +1,6 @@
 #pragma once
 #include "Alien.h"
-#include "Assets.h"
+#include "AutoTexture.h"
 #include "Background.h"
 #include "Player.h"
 #include "Projectile.h"
@@ -18,7 +18,10 @@ public:
     void render() const noexcept override;
 
 private:
-    Assets assets{};
+    //Note: the Player class owns its own assets, so it's not included here.
+    AutoTexture alien_gfx = AutoTexture{"./Assets/Alien.png"sv};
+    AutoTexture wall_gfx = AutoTexture{"./Assets/Barrier.png"sv};
+    AutoTexture beam_gfx = AutoTexture{"./Assets/Laser.png"sv};
     Background background{STAR_COUNT};
     Player player{};    
     std::vector<Projectile> playerProjectiles;

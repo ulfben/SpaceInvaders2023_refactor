@@ -1,7 +1,6 @@
-#include "Alien.h"
-#include "AutoTexture.h"
-#include "EndScreen.h"
 #include "GameScreen.h"
+#include "Alien.h"
+#include "EndScreen.h"
 #include "Projectile.h"
 #include "raylib.h"
 #include "RNG.h"
@@ -15,11 +14,12 @@
 #include <span>
 #include <vector>
 
-//free function utilities used by the GameScreen implementation..
+//free functions used by the GameScreen implementation.
 template<typename Container>
 static const auto& random(const Container& container) noexcept{    
     static RNG random(createSeeds()); //Note: I absolutely should have used raylibs' GetRandomValue, but I needed to test my own RNG so... 
     const auto index = random.inRange(container.size());
+    assert(index < container.size() && "inrange returned >= size(). Am I missunderstanding my own RNG? :D");
     [[gsl::suppress(bounds.4)]]
     return container[index];
 }
@@ -89,10 +89,10 @@ std::unique_ptr<State> GameScreen::update(){
 void GameScreen::render() const noexcept{
     background.Render();
     player.Render();
-    render_all<Projectile>(alienProjectiles, assets.beam);
-    render_all<Projectile>(playerProjectiles, assets.beam);
-    render_all<Wall>(walls, assets.wall);
-    render_all<Alien>(aliens, assets.alien);
+    render_all<Projectile>(alienProjectiles, beam_gfx);
+    render_all<Projectile>(playerProjectiles, beam_gfx);
+    render_all<Wall>(walls, wall_gfx);
+    render_all<Alien>(aliens, alien_gfx);
     DrawText(TextFormat("Score: %i", score), 50, 20, 40, YELLOW);
     DrawText(TextFormat("Lives: %i", player.lives), 50, 70, 40, YELLOW);
 }
