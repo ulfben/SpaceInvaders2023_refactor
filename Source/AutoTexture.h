@@ -1,13 +1,9 @@
 #pragma once
 #include "raylib.h"
+#include "UtilsRaylib.h"
 #include <string_view>
-#include <stdexcept>
-#include <format>
 using namespace std::literals::string_view_literals;
 
-struct LoadTextureError : public std::runtime_error{
-    explicit LoadTextureError(std::string_view msg) : std::runtime_error(msg.data()){}
-};
 
 class AutoTexture{
     Texture2D _tex;
@@ -15,7 +11,7 @@ public:
     explicit AutoTexture(std::string_view path){
         _tex = LoadTexture(path.data());
         if(_tex.id <= 0){
-            throw(LoadTextureError(std::format("Unable to load texture: {}"sv, path)));
+            throw LoadTextureError(path);
         }
     }
 

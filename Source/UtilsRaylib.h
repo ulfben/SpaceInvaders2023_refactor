@@ -5,7 +5,7 @@
 #include <limits>
 #include <string>
 #include <string_view>
-
+#include <stdexcept>
 
 /* A macro to let us suppress the C++ Core Guideline warnings, in a consistent way across compilers.
 * The expected syntax is: 
@@ -29,6 +29,10 @@
 #endif // __clang__
 
 /*A few utility functions, followed by some useful overloads for Raylib functions*/
+
+struct LoadTextureError : public std::runtime_error{
+    explicit LoadTextureError(std::string_view msg) : std::runtime_error(msg.data()){}
+};
 
 template <typename T, typename U>
 inline T narrow_cast(U&& u) noexcept{
