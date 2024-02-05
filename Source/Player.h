@@ -8,11 +8,16 @@
 #include <string_view>
 #include <vector>   
 
+template<std::unsigned_integral T>
+constexpr T advanceAndWrap(T current, T limit) noexcept {
+    return limit > 0 ? (current + 1) % limit : 0;
+}
+
 struct Animation{
     std::vector<AutoTexture> frames;
     size_t current = 0;
-    unsigned displayTime = 15; //in ticks   
-    unsigned tickCount = 0;
+    size_t displayTime = 15; //in ticks   
+    size_t tickCount = 0;
 
     explicit Animation(std::span<const std::string_view> paths){
         frames.reserve(paths.size());
@@ -22,15 +27,17 @@ struct Animation{
     }
 
     void update() noexcept{
-        tickCount++;
-        if(tickCount > displayTime){
-            tickCount = 0;
-            current = (current + 1) % frames.size();
+        tickCount = advanceAndWrap(tickCount, displayTime);
+        if(tickCount == 0){            
+            current = advanceAndWrap(current, frameCount());
         }
     }
     const Texture2D& currentFrame() const noexcept{
         [[gsl::suppress(bounds.4)]]
         return frames[current].get();
+    }
+    size_t frameCount() const noexcept{
+        return frames.size();
     }
     float width() const noexcept{
         return toFloat(currentFrame().width);
