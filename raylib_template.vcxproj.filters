@@ -89,6 +89,9 @@
     <ClInclude Include="Source\Seeding.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Animation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">

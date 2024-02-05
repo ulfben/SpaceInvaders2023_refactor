@@ -172,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Alien.h" />
+    <ClInclude Include="Source\Animation.h" />
     <ClInclude Include="Source\AutoTexture.h" />
     <ClInclude Include="Source\Background.h" />
     <ClInclude Include="Source\DrawGuard.h" />
