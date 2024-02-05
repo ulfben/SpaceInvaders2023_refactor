@@ -18,13 +18,13 @@ struct Wall{
     }
 
     Rectangle hitBox() const noexcept{
-        return Rectangle{position.x, position.y, WIDTH, HEIGHT};
+        return Rectangle{x(), y(), WIDTH, HEIGHT};
     }
 
     void Render(const Texture2D& tx) const noexcept{
-        DrawTexture(tx, position.x, position.y);
+        DrawTexture(tx, x(), y());
         const float label_offset = toFloat(tx.width) * 0.4f;
-        const Vector2 label_pos{position.x + label_offset, position.y + tx.height / 2};
+        const Vector2 label_pos{x() + label_offset, y() + tx.height / 2};
         DrawText(TextFormat("%i", health), label_pos, tx.height / 2, RED);
     }
 

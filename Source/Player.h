@@ -6,11 +6,9 @@
 #include <algorithm> //for std::clamp
 
 struct Player{
-    static constexpr float SPEED = 7;
-    static constexpr float WIDTH = 94;
-    static constexpr float HEIGHT = 97;
+    static constexpr float SPEED = 7;    
     Animation animation{PlayerAnimationFiles};
-    Vector2 position{GetScreenWidthF() / 2.0f, GetScreenHeightF() - HEIGHT};
+    Vector2 position{GetScreenWidthF() / 2.0f, GetScreenHeightF() - height()};
     int lives = 3;     
 
     float x() const noexcept{
@@ -35,13 +33,13 @@ struct Player{
         return y();
     }
     float centerX() const noexcept{
-        return x() + animation.width() / 2.0f;
+        return x() + (width() / 2.0f);
     }
     Vector2 gunPosition() const noexcept{
         return {centerX(), top() };
     }
     Rectangle hitbox() const noexcept{
-        return {x(), y(), animation.width(), animation.height()};
+        return {x(), y(), width(), height()};
     }
 
     void Update() noexcept{

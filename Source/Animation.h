@@ -15,19 +15,19 @@ class Animation{
     size_t current = 0;    
     size_t tickCount = 0;
 
-    static constexpr size_t advanceAndWrap(size_t current, size_t limit) noexcept{
+    static constexpr size_t advanceAndWrap(size_t i, size_t limit) noexcept{
         assert(limit > 0);
-        return ++current % limit;
+        return ++i % limit;
     }
 
 public:
     explicit Animation(std::span<const std::string_view> paths){
         frames.reserve(paths.size());
-        for(auto path : paths){ //by copy, string_view is a cheap value type
+        for(const auto& path : paths){
             frames.emplace_back(path);
         }
         if(frames.empty()){
-            throw std::runtime_error("No frames in animation");
+            throw std::runtime_error("No frames in animation.");
         }
     }
 

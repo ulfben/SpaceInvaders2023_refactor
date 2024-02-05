@@ -23,12 +23,12 @@ struct Projectile{
     }
 
     Rectangle hitBox() const noexcept{
-        return Rectangle{position.x, position.y, WIDTH, HEIGHT};
+        return Rectangle{x(), y(), WIDTH, HEIGHT};
     }
 
     void Update() noexcept{
         position.y += speed;
-        if(position.y < -HEIGHT || position.y > GetScreenHeightF() + HEIGHT){
+        if(y() < -HEIGHT || y() > GetScreenHeightF()){
             active = false;
         }
     }
