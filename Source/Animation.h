@@ -37,7 +37,7 @@ public:
         }
     }
     const Texture2D& currentFrame() const noexcept{
-        [[gsl::suppress(bounds.4)]]
+        [[gsl::suppress(bounds.4)]] //current is guarantueed to be in range
         return frames[current].get();
     }
     size_t frameCount() const noexcept{

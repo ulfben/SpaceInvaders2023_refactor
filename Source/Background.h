@@ -17,7 +17,7 @@ public:
 };
 
 class Background{
-    static constexpr auto PARALLAX_DISTANCE = 85.0f; //ratio for how much the stars should move relative to the player's movement
+    static constexpr auto PARALLAX_DISTANCE = 85.0f;
     static constexpr auto MARGIN = 150;
     std::vector<Star> stars;
     float scrolling_offset = 0;

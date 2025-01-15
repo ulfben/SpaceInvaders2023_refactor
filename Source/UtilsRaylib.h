@@ -18,11 +18,11 @@ struct LoadTextureError : public std::runtime_error{
 };
 
 template <typename T, typename U>
-inline T narrow_cast(U&& u) noexcept{
+constexpr T narrow_cast(U&& u) noexcept{
     return static_cast<T>(std::forward<U>(u));
 }
 
-inline char toChar(int i) noexcept{
+constexpr char toChar(int i) noexcept{
     if(i < std::numeric_limits<char>::min() || i > std::numeric_limits<char>::max()){        
        return '\0';
     }
@@ -30,16 +30,16 @@ inline char toChar(int i) noexcept{
 }
 
 template <std::integral T>
-inline float toFloat(T value) noexcept{
+constexpr float toFloat(T value) noexcept{
     return static_cast<float>(value);
 }
 
-inline int toInt(float value) noexcept{
+constexpr int toInt(float value) noexcept{
     return narrow_cast<int>(value);
 }
 
 template <std::integral T>
-inline T floor(float value) noexcept{
+constexpr T floor(float value) noexcept{
     return narrow_cast<T>(std::floor(value));
 }
 

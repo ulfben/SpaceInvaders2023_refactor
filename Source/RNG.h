@@ -42,23 +42,24 @@ struct PCG32{
         state = oldstate * PCG32_MULT + (inc | 1);
         const auto xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
         const auto rot = oldstate >> 59u;
-        return static_cast<u32>((xorshifted >> rot) | (xorshifted << ((~rot + 1) & 31)));
+        return narrow_cast<u32>((xorshifted >> rot) | (xorshifted << ((~rot + 1) & 31)));
     }
 
     constexpr result_type next(u32 bound) noexcept{
         //highly performant Lemire's algorithm (Debiased Integer Multiplication) after research by Melissa O'Neill
         // https://www.pcg-random.org/posts/bounded-rands.html        
-        u64 result = u64(next()) * u64(bound);
-        if(u32 lowbits = u32(result); lowbits < bound){
-            u32 threshold = u32(0) - bound;   // Calculate 2^32 - bound for rejection sampling
+        constexpr auto to64 = [](auto x) noexcept { return static_cast<u64>(x); };
+        u64 result = to64(next()) * to64(bound);
+        if(u32 lowbits = narrow_cast<u32>(result); lowbits < bound){
+            u32 threshold = u32{0} - bound;   // Calculate 2^32 - bound for rejection sampling
             if(threshold >= bound){
                 threshold -= bound;
                 if(threshold >= bound)
-                    threshold %= bound;
+                    threshold %= bound; 
             }
             while(lowbits < threshold){
-                result = u64(next()) * u64(bound);
-                lowbits = u32(result);
+                result = to64(next()) * to64(bound);;
+                lowbits = narrow_cast<u32>(result);
             }
         }
         return result >> 32;
@@ -70,15 +71,14 @@ struct PCG32{
 
     //an overload for size_t because we often want to pull random indexes of containers
     constexpr result_type next(size_t bound) noexcept{
-        if(bound <= std::numeric_limits<u32>::max()){
-            return next(static_cast<u32>(bound));
-        }        
-        const size_t mid = bound / 2;
-        const bool use_upper = coinToss();
-        if(use_upper){
-            return static_cast<result_type>(mid + next(bound - mid));
+        if(bound <= max()){
+            return next(narrow_cast<u32>(bound));
         }
-        return static_cast<result_type>(next(mid));
+        const size_t mid = bound / 2;
+        if(const bool use_upper = coinToss()){
+            return narrow_cast<result_type>(mid + next(bound - mid));
+        }
+        return narrow_cast<result_type>(next(mid));
     }
 
     //generate float in [0, 1)
@@ -109,7 +109,7 @@ struct PCG32{
             "PCG32::between() only supports types up to PCG32::result_type in size");
         assert(min < max && "pcg32::between(min, max) called with inverted range.");
         UI range = static_cast<UI>(max - min);
-        return min + static_cast<I>(next(static_cast<result_type>(range)));
+        return min + static_cast<I>(next(narrow_cast<result_type>(range)));
     }
 
     constexpr void set_state(u64 new_state, u64 new_inc) noexcept{
@@ -144,7 +144,7 @@ private:
     u64 inc{1}; // controls which RNG sequence (stream) is selected. Must *always* be odd.
 };
 
-// Utility functions for seeding PRNGs (Pseudo Random Number Generators).
+// Utility functions for seeding Pseudo Random Number Generators
 // for more examples, see https://github.com/ulfben/cpp_prngs/blob/main/seed.hpp
 namespace seed {
     using u64 = std::uint64_t;
@@ -162,7 +162,7 @@ namespace seed {
         return splitmix64(now);
     }
 
-    constexpr inline u32 to_32(u64 seed) noexcept{
-        return static_cast<u32>(seed ^ (seed >> 32)); //XOR-fold to preserve entropy
+    constexpr u32 to_32(u64 seed) noexcept{
+        return narrow_cast<u32>(seed ^ (seed >> 32)); //XOR-fold to preserve entropy
     }
 }

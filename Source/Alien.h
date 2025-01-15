@@ -2,7 +2,7 @@
 #include "UtilsRaylib.h"
 
 struct Alien{            
-    static constexpr int WIDTH = 94; //TODO: these should be read from the sprite... 
+    static constexpr int WIDTH = 94;
     static constexpr int HEIGHT = 54;    
     Vector2 position = {0, 0};    
     float velocity = 2.0f;
