@@ -2,9 +2,7 @@
 #include "Alien.h"
 #include "EndScreen.h"
 #include "Projectile.h"
-#include "raylib.h"
 #include "RNG.h"
-#include "Seeding.h"
 #include "Settings.h"
 #include "State.h"
 #include "UtilsRaylib.h"
@@ -17,8 +15,8 @@
 //free functions used by the GameScreen implementation.
 template<typename Container>
 static const auto& random(const Container& container) noexcept{    
-    static RNG random(createSeeds()); //Note: I absolutely should have used raylibs' GetRandomValue, but I needed to test my own RNG so... 
-    const auto index = random.inRange(container.size());
+    static PCG32 rng(seed::from_time()); //Note: I absolutely should have used raylibs' GetRandomValue, but I needed to test my own RNG so... 
+    const auto index = rng.next(container.size());
     assert(index < container.size() && "inrange returned >= size(). Am I missunderstanding my own RNG? :D");
     [[gsl::suppress(bounds.4)]]
     return container[index];
@@ -42,34 +40,34 @@ static constexpr void render_all(std::span<const T> entities, const AutoTexture&
     }
 };
 
-void spawn(std::vector<Wall>& Walls){
-    Walls.reserve(WALL_COUNT);
+void spawn(std::vector<Wall>& walls){
+    walls.reserve(WALL_COUNT);
     constexpr float totalWallWidth = WALL_COUNT * Wall::WIDTH;
     const float spaceAvailable = GetScreenWidthF() - totalWallWidth;
     const float spacing = spaceAvailable / (WALL_COUNT + 1);
     const float y = GetScreenHeightF() - WALL_DIST_FROM_BOTTOM;    
     for(unsigned i = 0; i < WALL_COUNT; i++){
         const float x = spacing * toFloat(i + 1) + toFloat(Wall::WIDTH * i);
-        Walls.emplace_back(x, y);
+        walls.emplace_back(x, y);
     }
 }
 
-void spawn(std::vector<Alien>& Aliens){
-    Aliens.reserve(ALIEN_COUNT);
+void spawn(std::vector<Alien>& aliens){
+    aliens.reserve(ALIEN_COUNT);
     constexpr auto formationWidth = ALIEN_COLUMNS * ALIEN_SPACING;
     const auto left = (GetScreenWidth() / 2) - (formationWidth / 2);
     for(unsigned row = 0; row < ALIEN_ROWS; row++){
         for(unsigned col = 0; col < ALIEN_COLUMNS; col++){
             const auto x = left + (col * Alien::WIDTH);
             const auto y = ALIEN_FORMATION_TOP + (row * Alien::HEIGHT);
-            Aliens.emplace_back(toFloat(x), toFloat(y));
+            aliens.emplace_back(toFloat(x), toFloat(y));
         }
     }
 }
 
 //GameScreen members starts here
 
-GameScreen::GameScreen(){
+GameScreen::GameScreen() noexcept(false){
     spawn(walls);
     spawn(aliens);
 }

@@ -1,5 +1,4 @@
 #pragma once
-#include "raylib.h"
 #include "UtilsRaylib.h"
 
 struct Alien{            

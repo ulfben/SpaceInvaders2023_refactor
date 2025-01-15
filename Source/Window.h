@@ -1,4 +1,4 @@
-#include "raylib.h"
+#include "UtilsRaylib.h"
 struct Window{
     Window(std::string_view title, unsigned width, unsigned height, unsigned fps = 60) noexcept {
         InitWindow(width, height, title.data());

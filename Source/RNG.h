@@ -1,164 +1,168 @@
 #pragma once
-#include <array>
-#include <bitset>
 #include <cassert>
-#include <concepts>
 #include <cstdint>
 #include <limits>
-#include <span>
-#include <type_traits>
+#include <compare>
+#include <chrono>
+#include <utility>
+// PCG32 - Permuted Congruential Generator
+// Based on the minimal C implementation by Melissa O'Neill (https://www.pcg-random.org)
+// C++ implementation by Ulf Benjaminsson
+// see: https://github.com/ulfben/cpp_prngs/
+//
+// Satisfies 'UniformRandomBitGenerator' requirements - compatible with std::shuffle, 
+// std::sample, and most std::*_distribution classes.
 
-// The "xoshiro256** 1.0" generator.
-// Public interface, rejection sampling and seeding utilities (see; Seeding.h) 
-// by Ulf Benjaminsson (2023)
-// https://ulfbenjaminsson.com/
-// Based on C++ port by Arthur O'Dwyer (2021).
-// https://quuxplusone.github.io/blog/2021/11/23/xoshiro/
-// of the C version by David Blackman and Sebastiano Vigna (2018),
-// https://prng.di.unimi.it/xoshiro256starstar.c
-// splitmix64 by Sebastiano Vigna (2015) 
-// https://prng.di.unimi.it/splitmix64.c
+struct PCG32{
+    using u64 = std::uint64_t;
+    using u32 = std::uint32_t;
+    using result_type = u32;
+    using state_type = u64;
+    static constexpr u64 PCG32_DEFAULT_SEED = 0x853c49e6748fea9bULL;
+    static constexpr u64 PCG32_DEFAULT_STREAM = 0xda3e39cb94b95bdbULL;
+    static constexpr u64 PCG32_MULT = 6364136223846793005ULL;
 
-class RNG{
-public:
-    using u64 = std::uint_fast64_t;
-    static constexpr std::size_t SEED_COUNT = 4;
-    using State = std::array<u64, SEED_COUNT>;
-    using Span = std::span<const u64, SEED_COUNT>;
-    static constexpr auto USE_REJECTION_SAMPLING = false;
-    // When enabled, all ranged integer functions will use rejection sampling to ensure a more uniform 
-    // distribution of random numbers across large integer ranges. The concern with large ranges is that
-    // methods like modulo reduction (randNum % range) might not evenly distribute numbers 
-    // across the range, leading to bias. As a rule of thumb, if the range is more than half of 
-    // the maximum output (e.g., more than 2^63), you might start to see the benefits of using 
-    // rejection sampling to ensure uniformity.
+    constexpr PCG32() noexcept : state(PCG32_DEFAULT_SEED), inc(PCG32_DEFAULT_STREAM){}
 
-    constexpr explicit RNG(u64 seed) noexcept{
-        s[0] = splitmix64(seed);
-        s[1] = splitmix64(s[0] + 0x9E3779B97F4A7C15uLL);
-        s[2] = splitmix64(s[1] + 0x7F4A7C15uLL);  
-        s[3] = splitmix64(s[2] + 0x9E3779B9uLL);
+    //seed and a sequence selection constant (a.k.a. stream id).
+    constexpr PCG32(u64 seed_, u64 seq_ = 1) noexcept{
+        seed(seed_, seq_);
     }
 
-    constexpr explicit RNG(Span seeds) noexcept{
-        std::ranges::copy(seeds, s.begin());
+    constexpr void seed(u64 seed_, u64 seq_ = 1) noexcept{
+        state = 0U;
+        inc = (seq_ << 1u) | 1u; //ensure inc is odd
+        next();
+        state += seed_;
+        next();
     }
 
-    static constexpr u64 max() noexcept{
-        return std::numeric_limits<u64>::max();
+    constexpr result_type next() noexcept{
+        const auto oldstate = state;
+        state = oldstate * PCG32_MULT + (inc | 1);
+        const auto xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
+        const auto rot = oldstate >> 59u;
+        return static_cast<u32>((xorshifted >> rot) | (xorshifted << ((~rot + 1) & 31)));
     }
 
-    constexpr u64 next() noexcept{
-        const u64 result = rotl(s[1] * 5, 7) * 9;
-        const u64 t = s[1] << 17;
-        s[2] ^= s[0];
-        s[3] ^= s[1];
-        s[1] ^= s[2];
-        s[0] ^= s[3];
-        s[2] ^= t;
-        s[3] = rotl(s[3], 45);
-        return result;
+    constexpr result_type next(u32 bound) noexcept{
+        //highly performant Lemire's algorithm (Debiased Integer Multiplication) after research by Melissa O'Neill
+        // https://www.pcg-random.org/posts/bounded-rands.html        
+        u64 result = u64(next()) * u64(bound);
+        if(u32 lowbits = u32(result); lowbits < bound){
+            u32 threshold = u32(0) - bound;   // Calculate 2^32 - bound for rejection sampling
+            if(threshold >= bound){
+                threshold -= bound;
+                if(threshold >= bound)
+                    threshold %= bound;
+            }
+            while(lowbits < threshold){
+                result = u64(next()) * u64(bound);
+                lowbits = u32(result);
+            }
+        }
+        return result >> 32;
     }
 
     constexpr bool coinToss() noexcept{
         return next() & 1; //checks the least significant bit
     }
 
-    //returns a random number in the range [0, 1)
-    template<std::floating_point Real>
-    constexpr Real normalized() noexcept{
-        return static_cast<Real>(next()) / static_cast<Real>(max());
-    }
-
-    template<std::floating_point Real>
-    constexpr Real inRange(Real range) noexcept{
-        return normalized<Real>() * range;
-    }
-
-    template<std::floating_point Real>
-    constexpr Real inRange(Real from, Real to) noexcept{
-        assert(from < to && "RNG: inverted range.");
-        return from + normalized<Real>() * (to - from);
-    }
-
-    template<std::integral T>
-    constexpr T inRange(T from, T to) noexcept{
-        assert(from < to && "RNG: inverted range.");
-        using UT = std::make_unsigned_t<T>;
-        UT range = static_cast<UT>(to - from);
-        return static_cast<T>(inRange(range)) + from;
-    }
-
-    template<std::integral T>
-    constexpr T inRange(T range) noexcept{
-        using UT = std::make_unsigned_t<T>;
-        UT num = static_cast<UT>(inRange(static_cast<u64>(std::abs(range))));
-        return (range < 0) ? -static_cast<T>(num) : static_cast<T>(num);
-    }
-
-    constexpr u64 inRange(u64 range) noexcept{
-        if(range == 0){
-            assert(false && "RNG::inRange(u64) called with empty range!");
-            return 0;
+    //an overload for size_t because we often want to pull random indexes of containers
+    constexpr result_type next(size_t bound) noexcept{
+        if(bound <= std::numeric_limits<u32>::max()){
+            return next(static_cast<u32>(bound));
+        }        
+        const size_t mid = bound / 2;
+        const bool use_upper = coinToss();
+        if(use_upper){
+            return static_cast<result_type>(mid + next(bound - mid));
         }
-        if constexpr(USE_REJECTION_SAMPLING){
-            return uniformRandom(range);
-        }
-        return next() / (max() / range);
+        return static_cast<result_type>(next(mid));
     }
 
-    constexpr Span state() const{
-        return {s};
+    //generate float in [0, 1)
+    constexpr float normalized() noexcept{
+        return 0x1.0p-32f * next(); //again, courtesy of Melissa O'Neill. See: https://www.pcg-random.org/posts/bounded-rands.html
+        //0x1.0p-32 is a binary floating point constant for 2^-32 that we use to convert a random 
+        // integer value in the range [0..2^32) into a float in the unit interval 0-1        
+        //A less terrifying, but also less efficient, way to achieve the same goal  is:         
+        //    return static_cast<float>(std::ldexp(next(), -32));
+        //see https://mumble.net/~campbell/tmp/random_real.c for more info.        
     }
 
-    /* the jump() function is equivalent to 2^128 calls to next();
-    it can be used to generate 2^128 non-overlapping subsequences
-    for parallel computations. */
-    constexpr void jump() noexcept{
-        constexpr std::array<std::bitset<64>, SEED_COUNT> JUMP{
-            0x180ec6d33cfd0abaULL, 0xd5a61266f0c9392cULL, 0xa9582618e03fc9aaULL, 0x39abdc4529b1661cULL
-        };
-        State temp{0};
-        for(const auto& bits : JUMP){
-            for(std::size_t b = 0; b < 64; ++b){
-                if(bits.test(b)){
-                    temp[0] ^= s[0];
-                    temp[1] ^= s[1];
-                    temp[2] ^= s[2];
-                    temp[3] ^= s[3];
-                }
-                next();
-            }
-        }
-        s = temp;
+    //generate float in [-1, 1)    
+    constexpr float unit_range() noexcept{
+        return 2.0f * normalized() - 1.0f;
     }
 
-    static constexpr u64 splitmix64(u64 x) noexcept{
-        u64 z = (x + 0x9e3779b97f4a7c15uLL);
-        z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9uLL;
-        z = (z ^ (z >> 27)) * 0x94d049bb133111ebuLL;
-        return z ^ (z >> 31);
+    template<std::floating_point F>
+    constexpr F between(F min, F max) noexcept{
+        assert(min < max && "pcg32::between(min, max) called with inverted range.");
+        return min + (max - min) * normalized();
     }
-    
+
+    template<std::integral I>
+    constexpr I between(I min, I max) noexcept{
+        using UI = std::make_unsigned_t<I>;
+        static_assert(std::numeric_limits<UI>::max() <= max(),
+            "PCG32::between() only supports types up to PCG32::result_type in size");
+        assert(min < max && "pcg32::between(min, max) called with inverted range.");
+        UI range = static_cast<UI>(max - min);
+        return min + static_cast<I>(next(static_cast<result_type>(range)));
+    }
+
+    constexpr void set_state(u64 new_state, u64 new_inc) noexcept{
+        state = new_state;
+        inc = new_inc | 1u;  // ensure inc is odd
+    }
+    constexpr std::pair<u64, u64> get_state() const noexcept{
+        return {state, inc};
+    }
+    static constexpr PCG32 from_state(u64 saved_state, u64 saved_inc) noexcept{
+        PCG32 rng;
+        rng.set_state(saved_state, saved_inc);
+        return rng;
+    }
+
+    // operators and standard interface
+    constexpr result_type operator()() noexcept{
+        return next();
+    }
+    constexpr result_type operator()(u32 bound) noexcept{
+        return next(bound);
+    }
+    static result_type constexpr min() noexcept{
+        return 0;
+    }
+    static result_type constexpr max() noexcept{
+        return std::numeric_limits<result_type>::max();
+    }
+    constexpr auto operator<=>(const PCG32& other) const noexcept = default;
 private:
-    State s{};
-
-    static constexpr u64 rotl(u64 x, int k) noexcept{
-        return (x << k) | (x >> (64 - k));
-    }
-
-    //uses rejection sampling to ensure fair scaling. Costlier than inRange(u64)
-    //if you prefer to always use rejection sampling, set USE_REJECTION_SAMPLING to true.
-    constexpr u64 uniformRandom(u64 range) noexcept{
-        if(range == 0){
-            assert(false && "RNG::uniformRandom called with empty range!");
-            return 0;
-        }
-        const u64 rangeLimit = max() - range + 1;
-        u64 n = next();
-        while((n - (n % range)) >= rangeLimit){
-            n = next();
-        }
-        return n % range;
-    }
+    u64 state{0}; // RNG state.  All values are possible.
+    u64 inc{1}; // controls which RNG sequence (stream) is selected. Must *always* be odd.
 };
+
+// Utility functions for seeding PRNGs (Pseudo Random Number Generators).
+// for more examples, see https://github.com/ulfben/cpp_prngs/blob/main/seed.hpp
+namespace seed {
+    using u64 = std::uint64_t;
+    using u32 = std::uint32_t;
+
+    constexpr u64 splitmix64(u64 x) noexcept{
+        x += 0x9e3779b97f4a7c15;
+        x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
+        x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
+        return x ^ (x >> 31);
+    }
+
+    inline u64 from_time() noexcept{
+        const auto now = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        return splitmix64(now);
+    }
+
+    constexpr inline u32 to_32(u64 seed) noexcept{
+        return static_cast<u32>(seed ^ (seed >> 32)); //XOR-fold to preserve entropy
+    }
+}

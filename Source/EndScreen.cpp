@@ -1,5 +1,4 @@
 #include "EndScreen.h"
-#include "raylib.h"
 #include "Settings.h"
 #include "StartScreen.h"
 #include "State.h"

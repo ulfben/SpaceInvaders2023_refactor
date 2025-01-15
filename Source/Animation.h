@@ -1,6 +1,5 @@
 #pragma once
 #include "AutoTexture.h"
-#include "raylib.h"
 #include "UtilsRaylib.h"
 #include <assert.h>
 #include <span>
@@ -23,7 +22,7 @@ class Animation{
 public:
     explicit Animation(std::span<const std::string_view> paths){
         frames.reserve(paths.size());
-        for(const auto& path : paths){
+        for(auto path : paths){
             frames.emplace_back(path);
         }
         if(frames.empty()){

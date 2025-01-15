@@ -4,7 +4,7 @@
 #include "Background.h"
 #include "Player.h"
 #include "Projectile.h"
-#include "raylib.h"
+#include "UtilsRaylib.h"
 #include "Settings.h"
 #include "State.h"
 #include "Wall.h"
@@ -13,7 +13,7 @@
 
 class GameScreen : public State{
 public:
-    GameScreen();
+    GameScreen() noexcept(false);
     std::unique_ptr<State> update() noexcept(false) override;
     void render() const noexcept override;
 

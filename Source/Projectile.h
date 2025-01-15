@@ -1,5 +1,4 @@
 #pragma once
-#include "raylib.h"
 #include "UtilsRaylib.h"
 struct Projectile{
     static constexpr auto SPEED = 15.0f;

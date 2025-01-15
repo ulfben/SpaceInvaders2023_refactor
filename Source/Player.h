@@ -1,6 +1,5 @@
 #pragma once
 #include "Animation.h"
-#include "raylib.h"
 #include "Settings.h"
 #include "UtilsRaylib.h"
 #include <algorithm> //for std::clamp

@@ -1,32 +1,15 @@
 #pragma once
+#include <codeanalysis\warnings.h>
+#pragma warning(push)
+#pragma warning(disable:ALL_CODE_ANALYSIS_WARNINGS)
 #include "raylib.h"
+#pragma warning(pop)
 #include <cmath> //for std::floor
 #include <concepts>
 #include <limits>
 #include <string>
 #include <string_view>
 #include <stdexcept>
-
-/* A macro to let us suppress the C++ Core Guideline warnings, in a consistent way across compilers.
-* The expected syntax is: 
-*    [[gsl::suppress(bounds.4)]], or 
-*    [[gsl::suppress(bounds.4, justification: "Some reason.")]]
-* but clang expects the argument(s) in quotes, whereas mscv expects them unquoted. 
-* Untill this is sorted out, we'll use our own GSL_SUPPRESS(); 
-*/
-#if defined(__clang__)
-    #define GSL_STRINGIFY(x) #x
-    #define GSL_SUPPRESS_1(x) GSL_STRINGIFY(x)
-    #define GSL_SUPPRESS_2(x, y) GSL_STRINGIFY(x), GSL_STRINGIFY(y)
-    #define GSL_SELECT_MACRO(_1,_2,NAME,...) NAME
-    #define GSL_SUPPRESS(...) [[gsl::suppress(GSL_SELECT_MACRO(__VA_ARGS__, GSL_SUPPRESS_2, GSL_SUPPRESS_1)(__VA_ARGS__))]]
-#else
-#if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
-    #define GSL_SUPPRESS(...) [[gsl::suppress(__VA_ARGS__)]]
-#else
-    #define GSL_SUPPRESS(...)
-#endif // _MSC_VER
-#endif // __clang__
 
 /*A few utility functions, followed by some useful overloads for Raylib functions*/
 
