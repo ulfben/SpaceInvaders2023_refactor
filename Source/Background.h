@@ -1,46 +1,54 @@
 #pragma once
 #include "UtilsRaylib.h"
 #include <vector>
-
-class Star{
-    static constexpr auto COLOR = GRAY;        
-    float _x = 0; 
-    int _y = 0;
-    float _size = 0.0f;
-public:
-    Star(int x, int y, float size) noexcept : _x(toFloat(x)), _y(y), _size(size){};
-      
-    void Render(float offset) const noexcept{
-        const float scrolling_offset = offset/_size;        
-        DrawCircle(floor<int>(_x+scrolling_offset), _y, _size, COLOR);
-    }
-};
+#include <cassert>
 
 class Background{
+    class Stars{
+        static constexpr auto COLOR = GRAY;
+        std::vector<float> _x;
+        std::vector<int>   _y;
+        std::vector<float> _radius;
+
+    public:
+        explicit Stars(unsigned count){
+            _x.reserve(count);
+            _y.reserve(count);
+            _radius.reserve(count);
+            const int max_x = GetScreenWidth();
+            const int max_y = GetScreenHeight();
+            for(unsigned i = 0; i < count; ++i){
+                _x.push_back(toFloat(GetRandomValue(-150, max_x + 150)));
+                _y.push_back(GetRandomValue(0, max_y));
+                _radius.push_back(GetRandomValueF(1.0f, 3.0f));
+            }
+        }
+
+        void Render(float offset) const noexcept{
+            assert(_x.size() == _y.size() && _x.size() == _radius.size());
+            const std::size_t count = _x.size();
+            for(std::size_t i = 0; i < count; ++i){
+                [[gsl::suppress(bounds.4)]] //index is garuantueed to be in range.
+                const float parallax = offset / _radius[i]; //TODO: consider pre-computing inv_size = 1.0f / size to get rid of the division here.
+                [[gsl::suppress(bounds.4)]]
+                DrawCircle(floor<int>(_x[i] + parallax), _y[i], _radius[i], COLOR);
+            }
+        }
+    };
+
     static constexpr auto PARALLAX_DISTANCE = 85.0f;
     static constexpr auto MARGIN = 150;
-    std::vector<Star> stars;
+    Stars stars;
     float scrolling_offset = 0;
+
 public:
-    explicit Background(unsigned starAmount){
-        stars.reserve(starAmount);
-        const auto max_x = GetScreenWidth() + MARGIN;
-        const auto max_y = GetScreenHeight();
-        for(unsigned i = 0; i < starAmount; i++){
-            const auto x = GetRandomValue(-MARGIN, max_x);
-            const auto y = GetRandomValue(0, max_y);                
-            const auto size = GetRandomValueF(1, 3);
-            stars.emplace_back(x, y, size);
-        }
-    }
+    explicit Background(unsigned starAmount) : stars(starAmount){}
 
     void Update(float parallaxRatio) noexcept{                
         scrolling_offset = parallaxRatio * PARALLAX_DISTANCE * -1.0f;                
     }
 
     void Render() const noexcept{
-        for(const auto& star : stars){
-            star.Render(scrolling_offset);
-        }
+        stars.Render(scrolling_offset);
     }
 };

@@ -1,14 +1,14 @@
 #pragma once
 #include "UtilsRaylib.h"
+#include <string>
 #include <string_view>
-using namespace std::literals::string_view_literals;
-
 
 class AutoTexture{
     Texture2D _tex{};
 public:
     explicit AutoTexture(std::string_view path){
-        _tex = LoadTexture(path.data());
+        const std::string tmp(path); 
+        _tex = LoadTexture(tmp.c_str());
         if(_tex.id <= 0){
             throw LoadTextureError(path);
         }

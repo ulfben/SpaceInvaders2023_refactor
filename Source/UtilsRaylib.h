@@ -10,6 +10,7 @@
 #include <string>
 #include <string_view>
 #include <stdexcept>
+#include <cassert>
 
 /*A few utility functions, followed by some useful overloads for Raylib functions*/
 
@@ -51,9 +52,17 @@ inline float GetScreenHeightF() noexcept{
     return toFloat(GetScreenHeight());
 }
 
-template <typename T>
-inline float GetRandomValueF(T min, T max) noexcept{
-    return toFloat(GetRandomValue(narrow_cast<int>(min), narrow_cast<int>(max)));
+inline float range01() noexcept{    
+    // We use 32767 (guaranteed minimum RAND_MAX per C++ standard) to ensure 
+    // cross-platform consistency and prevent integer overflow in Raylib's internal math.
+    constexpr int resolution = 32767;
+    const auto r = GetRandomValue(0, resolution); // inclusive
+    return toFloat(r) / (toFloat(resolution) + 1.0f); // [0.0f,1.0f), exclusive
+}
+
+inline float GetRandomValueF(float min, float max) noexcept{
+    assert(min < max); 
+    return min + ((max - min) * range01());
 }
 
 inline void DrawTexture(const Texture2D& tex, float x, float y, Color tint = WHITE) noexcept{
