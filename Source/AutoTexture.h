@@ -5,7 +5,7 @@ using namespace std::literals::string_view_literals;
 
 
 class AutoTexture{
-    Texture2D _tex;
+    Texture2D _tex{};
 public:
     explicit AutoTexture(std::string_view path){
         _tex = LoadTexture(path.data());
@@ -17,12 +17,15 @@ public:
     AutoTexture(const AutoTexture& other) = delete;
     AutoTexture& operator=(const AutoTexture& other) = delete;
 
-    AutoTexture(AutoTexture&& other) noexcept{
-        std::swap(other._tex, _tex);
-    };
+    AutoTexture(AutoTexture&& other) noexcept 
+        : _tex(std::exchange(other._tex, Texture2D{}))
+    {}
 
     AutoTexture& operator=(AutoTexture&& other) noexcept{
-        std::swap(other._tex, _tex);
+        if(this != &other){
+            if(_tex.id){ UnloadTexture(_tex); }
+            _tex = std::exchange(other._tex, Texture2D{});
+        }
         return *this;
     };
 

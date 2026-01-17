@@ -44,9 +44,6 @@
     <ClInclude Include="Source\Background.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\RNG.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -1,9 +1,9 @@
 #pragma once
 #include "UtilsRaylib.h"
 struct DrawGuard{
-    DrawGuard() noexcept{
+    DrawGuard(Color background) noexcept{
         BeginDrawing();
-        ClearBackground(BLACK);
+        ClearBackground(background);
     }
     ~DrawGuard() noexcept{
         EndDrawing();

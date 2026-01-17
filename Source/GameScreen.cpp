@@ -1,24 +1,26 @@
-#include "GameScreen.h"
 #include "Alien.h"
+#include "AutoTexture.h"
 #include "EndScreen.h"
+#include "GameScreen.h"
 #include "Projectile.h"
-#include "RNG.h"
 #include "Settings.h"
 #include "State.h"
 #include "UtilsRaylib.h"
 #include "Wall.h"
 #include <algorithm>
+#include <cassert>
 #include <memory>
+#include <raylib.h>
 #include <span>
 #include <vector>
 
 //free functions used by the GameScreen implementation.
 template<typename Container>
-static const auto& random(const Container& container) noexcept{    
-    static PCG32 rng(seed::from_time()); //Note: I absolutely should have used raylibs' GetRandomValue, but I needed to test my own RNG so... 
-    const auto index = rng.next(container.size());
-    assert(index < container.size() && "inrange returned >= size(). Am I missunderstanding my own RNG? :D");
-    [[gsl::suppress(bounds.4)]]
+static const auto& random(const Container& container) noexcept{
+    assert(!container.empty() && "picking elements out of empty containers is undefined behavior");
+    const auto max = narrow_cast<int>(std::ssize(container)) - 1;
+    const auto index = GetRandomValue(0, max);    
+    [[gsl::suppress(bounds.4)]] //index is garuantueed to be <= size()-1
     return container[index];
 }
 
@@ -164,7 +166,8 @@ void GameScreen::maybeAliensShoots() noexcept{
     }
     alienShotCooldown = ALIEN_SHOT_COOLDOWN;
     try{
-        alienProjectiles.emplace_back(random(aliens).gunPosition());
+        const auto shootFrom = random(aliens).gunPosition();
+        alienProjectiles.emplace_back(shootFrom);
     } catch(...){/*swallowing the exception. The game can keep running without this projectile*/ }
 }
 

@@ -1,8 +1,8 @@
 #include "Game.h"
+#include "UtilsRaylib.h"
 #include <exception>
 #include <print>
 #include <stdexcept>
-#include "UtilsRaylib.h"
 
 int main(void) {
     try {        

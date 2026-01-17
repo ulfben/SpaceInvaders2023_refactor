@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -84,6 +84,7 @@
     <IncludePath>$(SolutionDir)External\raylib\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <IntDir>Build\Intermediate\$(Configuration)\</IntDir>
     <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Build\$(Configuration)\</OutDir>
@@ -182,7 +183,6 @@
     <ClInclude Include="Source\GameScreen.h" />
     <ClInclude Include="Source\Player.h" />
     <ClInclude Include="Source\Projectile.h" />
-    <ClInclude Include="Source\RNG.h" />
     <ClInclude Include="Source\Settings.h" />
     <ClInclude Include="Source\StartScreen.h" />
     <ClInclude Include="Source\State.h" />

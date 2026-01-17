@@ -16,6 +16,6 @@ void Game::Update() noexcept(false) {
 }
 
 void Game::Render() const noexcept{
-    DrawGuard d{};
+    DrawGuard d{BLACK};
     state->render();
 }
